@@ -31,8 +31,7 @@
   h1 { font-size: 16px; margin: 0 0 8px; flex-shrink: 0; }
   .layout {
     display: grid;
-    grid-template-columns: minmax(340px, 480px) minmax(280px, 420px);
-    justify-content: center;
+    grid-template-columns: 45fr 55fr;
     gap: 12px;
     max-width: 1300px;
     width: 100%;
@@ -68,7 +67,7 @@
   }
   .row { display: flex; gap: 8px; }
   .row > div { flex: 1; }
-  .presets { display: flex; flex-direction: column; gap: 4px; }
+  .presets { display: flex; flex-direction: row; flex-wrap: wrap; gap: 6px; }
   .preset-option {
     display: flex; align-items: center; gap: 6px;
     padding: 4px 6px; border: 1px solid var(--border); border-radius: 6px;
@@ -146,23 +145,25 @@
 <div class="layout">
   <!-- FORM -->
   <div class="card">
-    <fieldset>
-      <legend>Imóvel (endereço salvo)</legend>
-      <div class="presets" id="propertyPresets"></div>
-      <div class="preset-actions">
-        <button type="button" class="btn-secondary" id="saveProperty">Salvar imóvel atual</button>
-        <button type="button" class="btn-danger" id="deleteProperty">Remover selecionado</button>
-      </div>
-    </fieldset>
+    <div class="row" style="margin-bottom:8px;">
+      <fieldset style="flex:1;margin-bottom:0;">
+        <legend>Imóvel (endereço salvo)</legend>
+        <div class="presets" id="propertyPresets"></div>
+        <div class="preset-actions">
+          <button type="button" class="btn-secondary" id="saveProperty">Salvar</button>
+          <button type="button" class="btn-danger" id="deleteProperty">Remover</button>
+        </div>
+      </fieldset>
 
-    <fieldset>
-      <legend>Inquilino (nome salvo)</legend>
-      <div class="presets" id="tenantPresets"></div>
-      <div class="preset-actions">
-        <button type="button" class="btn-secondary" id="saveTenant">Salvar nome atual</button>
-        <button type="button" class="btn-danger" id="deleteTenant">Remover selecionado</button>
-      </div>
-    </fieldset>
+      <fieldset style="flex:1;margin-bottom:0;">
+        <legend>Inquilino (nome salvo)</legend>
+        <div class="presets" id="tenantPresets"></div>
+        <div class="preset-actions">
+          <button type="button" class="btn-secondary" id="saveTenant">Salvar</button>
+          <button type="button" class="btn-danger" id="deleteTenant">Remover</button>
+        </div>
+      </fieldset>
+    </div>
 
     <fieldset>
       <legend>Dados do recibo</legend>
