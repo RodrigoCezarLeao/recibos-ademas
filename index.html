@@ -31,7 +31,8 @@
   h1 { font-size: 16px; margin: 0 0 8px; flex-shrink: 0; }
   .layout {
     display: grid;
-    grid-template-columns: minmax(300px, 420px) 1fr;
+    grid-template-columns: minmax(340px, 480px) minmax(280px, 420px);
+    justify-content: center;
     gap: 12px;
     max-width: 1300px;
     width: 100%;
@@ -92,8 +93,6 @@
   .btn-danger:hover { background: #fbd3d3; }
   .generate-bar { margin-top: 4px; }
   .generate-bar button { width: 100%; padding: 10px; font-size: 14px; }
-  .total-line { font-size: 12px; color: var(--muted); margin-top: 4px; }
-  .total-line strong { color: var(--text); }
 
   /* Preview receipt (mirrors print layout) */
   #receiptPreview { display: flex; align-items: flex-start; justify-content: center; height: 100%; }
@@ -167,11 +166,16 @@
 
     <fieldset>
       <legend>Dados do recibo</legend>
-      <label>Recebi de</label>
-      <input type="text" id="tenantName">
-
-      <label>Endereço do imóvel</label>
-      <input type="text" id="address">
+      <div class="row">
+        <div style="flex:1;">
+          <label>Recebi de</label>
+          <input type="text" id="tenantName">
+        </div>
+        <div style="flex:1.4;">
+          <label>Endereço do imóvel</label>
+          <input type="text" id="address">
+        </div>
+      </div>
 
       <div class="row">
         <div>
@@ -193,28 +197,27 @@
           <label>Luz sv. (R$)</label>
           <input type="number" step="0.01" id="valLuz">
         </div>
-      </div>
-      <div class="row">
         <div>
           <label>Água (R$)</label>
           <input type="number" step="0.01" id="valAgua">
         </div>
+      </div>
+      <div class="row">
         <div>
           <label>Iptu (R$)</label>
           <input type="number" step="0.01" id="valIptu">
         </div>
-      </div>
-      <div class="row">
         <div>
           <label>Multa (R$)</label>
           <input type="number" step="0.01" id="valMulta">
         </div>
-        <div></div>
+        <div>
+          <label>Total</label>
+          <input type="text" id="totalDisplay" readonly style="font-weight:600;background:#f7f8fa;">
+        </div>
       </div>
 
-      <div class="total-line">Total: <strong id="totalDisplay">R$ 0,00</strong></div>
-
-      <div class="row" style="margin-top:10px;">
+      <div class="row" style="margin-top:6px;">
         <div>
           <label>Período de</label>
           <input type="date" id="periodFrom">
@@ -223,9 +226,11 @@
           <label>a</label>
           <input type="date" id="periodTo">
         </div>
+        <div>
+          <label>Vence em</label>
+          <input type="date" id="dueDate">
+        </div>
       </div>
-      <label>Vence em</label>
-      <input type="date" id="dueDate">
     </fieldset>
 
     <div class="generate-bar">
@@ -452,7 +457,7 @@
 
   function updateTotal() {
     var total = getTotal();
-    $("totalDisplay").textContent = fmtMoney(total);
+    $("totalDisplay").value = fmtMoney(total);
     return total;
   }
 
