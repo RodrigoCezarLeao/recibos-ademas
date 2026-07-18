@@ -120,6 +120,10 @@
   }
   .receipt .period-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
   .receipt .period-box { border: 1px solid #999; padding: 3px 10px; }
+  .receipt .pix-box {
+    border: 1px dashed #999; border-radius: 6px; padding: 8px 10px; margin-top: 10px;
+    font-size: 12px; background: #fafafa; line-height: 1.5;
+  }
   .receipt .signature { margin-top: 30px; text-align: center; }
   .receipt .signature .line { border-top: 1px solid #111; width: 260px; margin: 0 auto 4px; }
 
@@ -232,6 +236,11 @@
           <input type="date" id="dueDate">
         </div>
       </div>
+
+      <label class="preset-option" style="margin-top:8px;width:fit-content;">
+        <input type="checkbox" id="showPix">
+        <span>Incluir informação de pagamento via PIX</span>
+      </label>
     </fieldset>
 
     <div class="generate-bar">
@@ -484,6 +493,7 @@
   LIVE_FIELDS.forEach(function (id) {
     $(id).addEventListener("input", renderPreview);
   });
+  $("showPix").addEventListener("change", renderPreview);
 
   // ---- Save / delete presets ----
   function slugify(str) {
@@ -560,6 +570,13 @@
     var agua = parseFloat($("valAgua").value) || 0;
     var iptu = parseFloat($("valIptu").value) || 0;
     var multa = parseFloat($("valMulta").value) || 0;
+    var showPix = $("showPix").checked;
+    var pixHTML = showPix
+      ? '<div class="pix-box">' +
+          '<strong>Pagamento via PIX</strong><br>' +
+          'Chave (CPF): 111.517.147-04 &nbsp;&bull;&nbsp; Banco Itaú' +
+        '</div>'
+      : '';
 
     return '' +
     '<div class="receipt">' +
@@ -590,6 +607,8 @@
         '<span>À vencer em</span>' +
         '<span class="period-box">' + (dueDate || "&nbsp;&nbsp;&nbsp;&nbsp;") + '</span>' +
       '</div>' +
+
+      pixHTML +
 
       '<div class="signature">' +
         '<div class="line"></div>' +
