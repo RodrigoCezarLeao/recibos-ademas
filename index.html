@@ -117,9 +117,11 @@
   }
 
   @media print {
-    body * { visibility: hidden; }
-    #receiptPreview, #receiptPreview * { visibility: visible; }
-    #receiptPreview { position: absolute; top: 0; left: 0; width: 100%; padding: 0; }
+    body { padding: 0; margin: 0; }
+    h1, .layout > .card:first-child { display: none; }
+    .layout { display: block; }
+    .layout > .card:last-child { border: none; padding: 0; }
+    #receiptPreview { padding: 0; }
     .receipt { border: none; padding: 10mm; }
   }
 </style>
