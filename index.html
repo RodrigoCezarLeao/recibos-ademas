@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerador de Recibos de Aluguel</title>
+<style>
+  :root {
+    --bg: #f4f5f7;
+    --card: #ffffff;
+    --border: #d9dce1;
+    --text: #1f2430;
+    --muted: #6b7280;
+    --accent: #2563eb;
+    --accent-dark: #1d4ed8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 24px;
+  }
+  h1 { font-size: 20px; margin: 0 0 16px; }
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(320px, 480px) 1fr;
+    gap: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+    align-items: start;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  fieldset {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin: 0 0 16px;
+    padding: 12px 14px;
+  }
+  legend { font-weight: 600; font-size: 13px; color: var(--muted); padding: 0 6px; }
+  label { display: block; font-size: 13px; margin: 8px 0 4px; color: var(--muted); }
+  input[type=text], input[type=number], input[type=date], select {
+    width: 100%;
+    padding: 7px 9px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 14px;
+    background: #fff;
+    color: var(--text);
+  }
+  .row { display: flex; gap: 10px; }
+  .row > div { flex: 1; }
+  .presets { display: flex; flex-direction: column; gap: 6px; }
+  .preset-option {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px;
+    cursor: pointer; font-size: 13px;
+  }
+  .preset-option:hover { border-color: var(--accent); }
+  .preset-option input { width: auto; }
+  .preset-actions { display: flex; gap: 6px; margin-top: 8px; }
+  button {
+    cursor: pointer;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-dark); }
+  .btn-secondary { background: #eef0f3; color: var(--text); }
+  .btn-secondary:hover { background: #e2e5ea; }
+  .btn-danger { background: #fde8e8; color: #b91c1c; }
+  .btn-danger:hover { background: #fbd3d3; }
+  .generate-bar { margin-top: 4px; }
+  .generate-bar button { width: 100%; padding: 12px; font-size: 15px; }
+  .total-line { font-size: 13px; color: var(--muted); margin-top: 6px; }
+  .total-line strong { color: var(--text); }
+
+  /* Preview receipt (mirrors print layout) */
+  #receiptPreview { min-height: 400px; }
+  .receipt {
+    background: #fff;
+    border: 1px solid var(--border);
+    padding: 28px 32px;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #111;
+    font-size: 13px;
+  }
+  .receipt h2 { text-align: center; font-size: 17px; margin: 0 0 18px; letter-spacing: 0.5px; }
+  .receipt table.items { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+  .receipt table.items td { padding: 3px 4px; }
+  .receipt table.items td.label { width: 55%; }
+  .receipt table.items td.value { text-align: right; font-variant-numeric: tabular-nums; }
+  .receipt table.items tr.total td { border-top: 1.5px solid #111; font-weight: 700; padding-top: 6px; }
+  .receipt .info-row { display: flex; margin-bottom: 6px; }
+  .receipt .info-label { width: 190px; flex-shrink: 0; color: #333; }
+  .receipt .info-value { flex: 1; border-bottom: 1px solid #999; padding-bottom: 2px; }
+  .receipt .extenso { text-transform: uppercase; font-weight: 600; }
+  .receipt .address-box {
+    border: 1px solid #111; padding: 6px 10px; margin: 14px 0 8px; font-weight: 600;
+  }
+  .receipt .period-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .receipt .period-box { border: 1px solid #999; padding: 3px 10px; }
+  .receipt .signature { margin-top: 46px; text-align: center; }
+  .receipt .signature .line { border-top: 1px solid #111; width: 260px; margin: 0 auto 4px; }
+
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+
+  @media print {
+    body * { visibility: hidden; }
+    #receiptPreview, #receiptPreview * { visibility: visible; }
+    #receiptPreview { position: absolute; top: 0; left: 0; width: 100%; padding: 0; }
+    .receipt { border: none; padding: 10mm; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Gerador de Recibos de Aluguel</h1>
+
+<div class="layout">
+  <!-- FORM -->
+  <div class="card">
+    <fieldset>
+      <legend>Imóvel (endereço salvo)</legend>
+      <div class="presets" id="propertyPresets"></div>
+      <div class="preset-actions">
+        <button type="button" class="btn-secondary" id="saveProperty">Salvar imóvel atual</button>
+        <button type="button" class="btn-danger" id="deleteProperty">Remover selecionado</button>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Inquilino (nome salvo)</legend>
+      <div class="presets" id="tenantPresets"></div>
+      <div class="preset-actions">
+        <button type="button" class="btn-secondary" id="saveTenant">Salvar nome atual</button>
+        <button type="button" class="btn-danger" id="deleteTenant">Remover selecionado</button>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Dados do recibo</legend>
+      <label>Recebi de</label>
+      <input type="text" id="tenantName">
+
+      <label>Endereço do imóvel</label>
+      <input type="text" id="address">
+
+      <div class="row">
+        <div>
+          <label>Imóvel n°</label>
+          <input type="text" id="propertyNumber">
+        </div>
+        <div>
+          <label>Proveniente do aluguel de</label>
+          <input type="text" id="rentPeriodLabel">
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Aluguel (R$)</label>
+          <input type="number" step="0.01" id="valAluguel">
+        </div>
+        <div>
+          <label>Luz sv. (R$)</label>
+          <input type="number" step="0.01" id="valLuz">
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Água (R$)</label>
+          <input type="number" step="0.01" id="valAgua">
+        </div>
+        <div>
+          <label>Iptu (R$)</label>
+          <input type="number" step="0.01" id="valIptu">
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Multa (R$)</label>
+          <input type="number" step="0.01" id="valMulta">
+        </div>
+        <div></div>
+      </div>
+
+      <div class="total-line">Total: <strong id="totalDisplay">R$ 0,00</strong></div>
+
+      <div class="row" style="margin-top:10px;">
+        <div>
+          <label>Período de</label>
+          <input type="date" id="periodFrom">
+        </div>
+        <div>
+          <label>a</label>
+          <input type="date" id="periodTo">
+        </div>
+      </div>
+      <label>Vence em</label>
+      <input type="date" id="dueDate">
+    </fieldset>
+
+    <div class="generate-bar">
+      <button type="button" class="btn-primary" id="generateBtn">Gerar recibo e imprimir</button>
+    </div>
+  </div>
+
+  <!-- PREVIEW -->
+  <div class="card">
+    <div id="receiptPreview"><p style="color:#9ca3af;font-size:13px;">A pré-visualização do recibo aparecerá aqui.</p></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var STORAGE_PROPERTIES = "recibos_properties_v1";
+  var STORAGE_TENANTS = "recibos_tenants_v1";
+
+  var DEFAULT_PROPERTIES = [
+    {
+      id: "irma-filomena",
+      label: "Rua Irmã Filomena 31 - Mesquita",
+      address: "Rua Irmã Filomena 31 Mesquita",
+      propertyNumber: "2",
+      aluguel: 600.00,
+      luz: 4.90,
+      agua: 16.25,
+      iptu: 22.65
+    },
+    {
+      id: "avenida-uniao",
+      label: "Avenida União, n° 297 - Mesquita",
+      address: "Avenida União, n° 297 - Mesquita",
+      propertyNumber: "297",
+      aluguel: 700.00,
+      luz: 20.61,
+      agua: 64.88,
+      iptu: 22.29
+    }
+  ];
+
+  var DEFAULT_TENANTS = [
+    { id: "gloria", label: "Gloria Pereira da Silva Silveira", propertyId: "irma-filomena" },
+    { id: "mauricio", label: "Mauricio Guilherme Reis dos Santos", propertyId: "avenida-uniao" }
+  ];
+
+  function loadList(key, defaults) {
+    var raw = localStorage.getItem(key);
+    if (!raw) return defaults.slice();
+    try {
+      var parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length) return parsed;
+      return defaults.slice();
+    } catch (e) {
+      return defaults.slice();
+    }
+  }
+
+  function saveList(key, list) {
+    localStorage.setItem(key, JSON.stringify(list));
+  }
+
+  var properties = loadList(STORAGE_PROPERTIES, DEFAULT_PROPERTIES);
+  var tenants = loadList(STORAGE_TENANTS, DEFAULT_TENANTS);
+  var selectedPropertyId = properties.length ? properties[0].id : null;
+  var selectedTenantId = tenants.length ? tenants[0].id : null;
+
+  var $ = function (id) { return document.getElementById(id); };
+
+  function fmtMoney(n) {
+    return "R$ " + (n || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function fmtDateBR(isoStr) {
+    if (!isoStr) return "";
+    var parts = isoStr.split("-");
+    if (parts.length !== 3) return isoStr;
+    return parts[2] + "/" + parts[1] + "/" + parts[0];
+  }
+
+  // ---- Number to words (Portuguese, currency) ----
+  var UNIDADES = ["", "um", "dois", "três", "quatro", "cinco", "seis", "sete", "oito", "nove"];
+  var DEZ_A_DEZENOVE = ["dez", "onze", "doze", "treze", "quatorze", "quinze", "dezesseis", "dezessete", "dezoito", "dezenove"];
+  var DEZENAS = ["", "", "vinte", "trinta", "quarenta", "cinquenta", "sessenta", "setenta", "oitenta", "noventa"];
+  var CENTENAS = ["", "cento", "duzentos", "trezentos", "quatrocentos", "quinhentos", "seiscentos", "setecentos", "oitocentos", "novecentos"];
+
+  function trioToWords(n) {
+    if (n === 0) return "";
+    if (n === 100) return "cem";
+    var c = Math.floor(n / 100);
+    var r = n % 100;
+    var parts = [];
+    if (c > 0) parts.push(CENTENAS[c]);
+    if (r > 0) {
+      if (r < 10) parts.push(UNIDADES[r]);
+      else if (r < 20) parts.push(DEZ_A_DEZENOVE[r - 10]);
+      else {
+        var d = Math.floor(r / 10);
+        var u = r % 10;
+        parts.push(DEZENAS[d] + (u > 0 ? " e " + UNIDADES[u] : ""));
+      }
+    }
+    return parts.join(" e ");
+  }
+
+  function integerToWords(num) {
+    if (num === 0) return "zero";
+    var scales = [
+      { value: 1000000000, singular: "bilhão", plural: "bilhões" },
+      { value: 1000000, singular: "milhão", plural: "milhões" },
+      { value: 1000, singular: "mil", plural: "mil" },
+      { value: 1, singular: "", plural: "" }
+    ];
+    var remaining = num;
+    var segments = [];
+    for (var i = 0; i < scales.length; i++) {
+      var scale = scales[i];
+      var count = Math.floor(remaining / scale.value);
+      remaining = remaining % scale.value;
+      if (count > 0) {
+        if (scale.value === 1000 && count === 1) {
+          segments.push("mil");
+        } else if (scale.value === 1) {
+          segments.push(trioToWords(count));
+        } else {
+          segments.push(trioToWords(count) + " " + (count === 1 ? scale.singular : scale.plural));
+        }
+      }
+    }
+    if (segments.length === 1) return segments[0];
+    var last = segments[segments.length - 1];
+    var head = segments.slice(0, -1).join(", ");
+    return head + " e " + last;
+  }
+
+  function valorPorExtenso(value) {
+    var cents = Math.round(value * 100);
+    var reais = Math.floor(cents / 100);
+    var centavos = cents % 100;
+    var reaisWords = reais > 0
+      ? integerToWords(reais) + (reais === 1 ? " real" : " reais")
+      : "";
+    var centavosWords = centavos > 0
+      ? integerToWords(centavos) + (centavos === 1 ? " centavo" : " centavos")
+      : "";
+    if (reaisWords && centavosWords) return (reaisWords + " e " + centavosWords).toUpperCase();
+    if (reaisWords) return reaisWords.toUpperCase();
+    if (centavosWords) return centavosWords.toUpperCase();
+    return "ZERO REAIS";
+  }
+
+  // ---- Rendering preset lists ----
+  function renderPropertyPresets() {
+    var container = $("propertyPresets");
+    container.innerHTML = "";
+    properties.forEach(function (p) {
+      var wrap = document.createElement("label");
+      wrap.className = "preset-option";
+      var radio = document.createElement("input");
+      radio.type = "radio";
+      radio.name = "propertyPreset";
+      radio.value = p.id;
+      radio.checked = p.id === selectedPropertyId;
+      radio.addEventListener("change", function () {
+        selectedPropertyId = p.id;
+        applyProperty(p);
+      });
+      var span = document.createElement("span");
+      span.textContent = p.label;
+      wrap.appendChild(radio);
+      wrap.appendChild(span);
+      container.appendChild(wrap);
+    });
+  }
+
+  function renderTenantPresets() {
+    var container = $("tenantPresets");
+    container.innerHTML = "";
+    tenants.forEach(function (t) {
+      var wrap = document.createElement("label");
+      wrap.className = "preset-option";
+      var radio = document.createElement("input");
+      radio.type = "radio";
+      radio.name = "tenantPreset";
+      radio.value = t.id;
+      radio.checked = t.id === selectedTenantId;
+      radio.addEventListener("change", function () {
+        selectedTenantId = t.id;
+        applyTenant(t);
+      });
+      var span = document.createElement("span");
+      span.textContent = t.label;
+      wrap.appendChild(radio);
+      wrap.appendChild(span);
+      container.appendChild(wrap);
+    });
+  }
+
+  function applyProperty(p) {
+    $("address").value = p.address;
+    $("propertyNumber").value = p.propertyNumber;
+    $("valAluguel").value = p.aluguel;
+    $("valLuz").value = p.luz;
+    $("valAgua").value = p.agua;
+    $("valIptu").value = p.iptu;
+    updateTotal();
+  }
+
+  function applyTenant(t) {
+    $("tenantName").value = t.label;
+    if (t.propertyId) {
+      var prop = properties.filter(function (p) { return p.id === t.propertyId; })[0];
+      if (prop) {
+        selectedPropertyId = prop.id;
+        renderPropertyPresets();
+        applyProperty(prop);
+      }
+    }
+  }
+
+  function updateTotal() {
+    var total = getTotal();
+    $("totalDisplay").textContent = fmtMoney(total);
+    return total;
+  }
+
+  function getTotal() {
+    var aluguel = parseFloat($("valAluguel").value) || 0;
+    var luz = parseFloat($("valLuz").value) || 0;
+    var agua = parseFloat($("valAgua").value) || 0;
+    var iptu = parseFloat($("valIptu").value) || 0;
+    var multa = parseFloat($("valMulta").value) || 0;
+    return aluguel + luz + agua + iptu + multa;
+  }
+
+  ["valAluguel", "valLuz", "valAgua", "valIptu", "valMulta"].forEach(function (id) {
+    $(id).addEventListener("input", updateTotal);
+  });
+
+  // ---- Save / delete presets ----
+  function slugify(str) {
+    return str.toLowerCase()
+      .normalize("NFD").replace(/[̀-ͯ]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "") + "-" + Date.now();
+  }
+
+  $("saveProperty").addEventListener("click", function () {
+    var address = $("address").value.trim();
+    if (!address) { alert("Preencha o endereço antes de salvar."); return; }
+    var id = slugify(address);
+    var p = {
+      id: id,
+      label: address,
+      address: address,
+      propertyNumber: $("propertyNumber").value.trim(),
+      aluguel: parseFloat($("valAluguel").value) || 0,
+      luz: parseFloat($("valLuz").value) || 0,
+      agua: parseFloat($("valAgua").value) || 0,
+      iptu: parseFloat($("valIptu").value) || 0
+    };
+    properties.push(p);
+    saveList(STORAGE_PROPERTIES, properties);
+    selectedPropertyId = id;
+    renderPropertyPresets();
+  });
+
+  $("deleteProperty").addEventListener("click", function () {
+    if (!selectedPropertyId) return;
+    if (!confirm("Remover o imóvel selecionado da lista salva?")) return;
+    properties = properties.filter(function (p) { return p.id !== selectedPropertyId; });
+    saveList(STORAGE_PROPERTIES, properties);
+    selectedPropertyId = properties.length ? properties[0].id : null;
+    renderPropertyPresets();
+    if (selectedPropertyId) applyProperty(properties[0]);
+  });
+
+  $("saveTenant").addEventListener("click", function () {
+    var name = $("tenantName").value.trim();
+    if (!name) { alert("Preencha o nome antes de salvar."); return; }
+    var id = slugify(name);
+    tenants.push({ id: id, label: name, propertyId: selectedPropertyId });
+    saveList(STORAGE_TENANTS, tenants);
+    selectedTenantId = id;
+    renderTenantPresets();
+  });
+
+  $("deleteTenant").addEventListener("click", function () {
+    if (!selectedTenantId) return;
+    if (!confirm("Remover o nome selecionado da lista salva?")) return;
+    tenants = tenants.filter(function (t) { return t.id !== selectedTenantId; });
+    saveList(STORAGE_TENANTS, tenants);
+    selectedTenantId = tenants.length ? tenants[0].id : null;
+    renderTenantPresets();
+    if (selectedTenantId) applyTenant(tenants[0]);
+  });
+
+  // ---- Generate receipt ----
+  function buildReceiptHTML() {
+    var total = getTotal();
+    var extenso = valorPorExtenso(total);
+    var tenantName = $("tenantName").value.trim() || "-";
+    var address = $("address").value.trim() || "-";
+    var propertyNumber = $("propertyNumber").value.trim() || "-";
+    var rentPeriodLabel = $("rentPeriodLabel").value.trim() || "01 Mês";
+    var periodFrom = fmtDateBR($("periodFrom").value);
+    var periodTo = fmtDateBR($("periodTo").value);
+    var dueDate = fmtDateBR($("dueDate").value);
+
+    var aluguel = parseFloat($("valAluguel").value) || 0;
+    var luz = parseFloat($("valLuz").value) || 0;
+    var agua = parseFloat($("valAgua").value) || 0;
+    var iptu = parseFloat($("valIptu").value) || 0;
+    var multa = parseFloat($("valMulta").value) || 0;
+
+    return '' +
+    '<div class="receipt">' +
+      '<h2>RECIBO DE ALUGUEL</h2>' +
+      '<table class="items">' +
+        '<tr><td class="label">Aluguel</td><td class="value">' + fmtMoney(aluguel) + '</td></tr>' +
+        '<tr><td class="label">Luz sv.</td><td class="value">' + fmtMoney(luz) + '</td></tr>' +
+        '<tr><td class="label">Água</td><td class="value">' + fmtMoney(agua) + '</td></tr>' +
+        '<tr><td class="label">Iptu</td><td class="value">' + fmtMoney(iptu) + '</td></tr>' +
+        '<tr><td class="label">Multa</td><td class="value">' + (multa > 0 ? fmtMoney(multa) : "") + '</td></tr>' +
+        '<tr class="total"><td class="label">Total</td><td class="value">' + fmtMoney(total) + '</td></tr>' +
+      '</table>' +
+
+      '<div class="info-row"><div class="info-label">Recebi de</div><div class="info-value">' + tenantName + '</div></div>' +
+      '<div class="info-row"><div class="info-label">A quantia de</div><div class="info-value extenso">' + extenso + '</div></div>' +
+      '<div class="info-row"><div class="info-label">Proveniente do aluguel de</div><div class="info-value">' + rentPeriodLabel + '</div></div>' +
+      '<div class="info-row"><div class="info-label">Do imóvel n°</div><div class="info-value">' + propertyNumber + '</div></div>' +
+
+      '<div class="address-box">' + address + '</div>' +
+
+      '<div class="period-row">' +
+        '<span>Correspondente ao período de</span>' +
+        '<span class="period-box">' + (periodFrom || "&nbsp;&nbsp;&nbsp;&nbsp;") + '</span>' +
+        '<span>a</span>' +
+        '<span class="period-box">' + (periodTo || "&nbsp;&nbsp;&nbsp;&nbsp;") + '</span>' +
+      '</div>' +
+      '<div class="period-row">' +
+        '<span>À vencer em</span>' +
+        '<span class="period-box">' + (dueDate || "&nbsp;&nbsp;&nbsp;&nbsp;") + '</span>' +
+      '</div>' +
+
+      '<div class="signature">' +
+        '<div class="line"></div>' +
+        '<div>Assinatura</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  $("generateBtn").addEventListener("click", function () {
+    $("receiptPreview").innerHTML = buildReceiptHTML();
+    setTimeout(function () { window.print(); }, 50);
+  });
+
+  // ---- Init ----
+  renderPropertyPresets();
+  renderTenantPresets();
+  if (selectedTenantId) {
+    var initialTenant = tenants.filter(function (t) { return t.id === selectedTenantId; })[0];
+    if (initialTenant) applyTenant(initialTenant);
+  } else if (selectedPropertyId) {
+    var initialProperty = properties.filter(function (p) { return p.id === selectedPropertyId; })[0];
+    if (initialProperty) applyProperty(initialProperty);
+  }
+  updateTotal();
+  $("receiptPreview").innerHTML = buildReceiptHTML();
+})();
+</script>
+</body>
+</html>
