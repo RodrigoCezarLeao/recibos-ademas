@@ -15,62 +15,73 @@
     --accent-dark: #1d4ed8;
   }
   * { box-sizing: border-box; }
+  html, body {
+    height: 100%;
+  }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
     background: var(--bg);
     color: var(--text);
     margin: 0;
-    padding: 24px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
-  h1 { font-size: 20px; margin: 0 0 16px; }
+  h1 { font-size: 16px; margin: 0 0 8px; flex-shrink: 0; }
   .layout {
     display: grid;
-    grid-template-columns: minmax(320px, 480px) 1fr;
-    gap: 24px;
-    max-width: 1200px;
+    grid-template-columns: minmax(300px, 420px) 1fr;
+    gap: 12px;
+    max-width: 1300px;
+    width: 100%;
     margin: 0 auto;
-    align-items: start;
+    align-items: stretch;
+    flex: 1;
+    min-height: 0;
   }
   .card {
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 10px;
-    padding: 20px;
+    padding: 12px 14px;
+    overflow-y: auto;
+    min-height: 0;
   }
   fieldset {
     border: 1px solid var(--border);
     border-radius: 8px;
-    margin: 0 0 16px;
-    padding: 12px 14px;
+    margin: 0 0 8px;
+    padding: 6px 10px 8px;
   }
-  legend { font-weight: 600; font-size: 13px; color: var(--muted); padding: 0 6px; }
-  label { display: block; font-size: 13px; margin: 8px 0 4px; color: var(--muted); }
+  legend { font-weight: 600; font-size: 12px; color: var(--muted); padding: 0 4px; }
+  label { display: block; font-size: 12px; margin: 4px 0 2px; color: var(--muted); }
   input[type=text], input[type=number], input[type=date], select {
     width: 100%;
-    padding: 7px 9px;
+    padding: 5px 8px;
     border: 1px solid var(--border);
     border-radius: 6px;
-    font-size: 14px;
+    font-size: 13px;
     background: #fff;
     color: var(--text);
   }
-  .row { display: flex; gap: 10px; }
+  .row { display: flex; gap: 8px; }
   .row > div { flex: 1; }
-  .presets { display: flex; flex-direction: column; gap: 6px; }
+  .presets { display: flex; flex-direction: column; gap: 4px; }
   .preset-option {
-    display: flex; align-items: center; gap: 8px;
-    padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px;
-    cursor: pointer; font-size: 13px;
+    display: flex; align-items: center; gap: 6px;
+    padding: 4px 6px; border: 1px solid var(--border); border-radius: 6px;
+    cursor: pointer; font-size: 12px;
   }
   .preset-option:hover { border-color: var(--accent); }
   .preset-option input { width: auto; }
-  .preset-actions { display: flex; gap: 6px; margin-top: 8px; }
+  .preset-actions { display: flex; gap: 6px; margin-top: 6px; }
   button {
     cursor: pointer;
     border: none;
     border-radius: 6px;
-    padding: 8px 12px;
-    font-size: 13px;
+    padding: 6px 10px;
+    font-size: 12px;
     font-weight: 500;
   }
   .btn-primary { background: var(--accent); color: #fff; }
@@ -80,49 +91,52 @@
   .btn-danger { background: #fde8e8; color: #b91c1c; }
   .btn-danger:hover { background: #fbd3d3; }
   .generate-bar { margin-top: 4px; }
-  .generate-bar button { width: 100%; padding: 12px; font-size: 15px; }
-  .total-line { font-size: 13px; color: var(--muted); margin-top: 6px; }
+  .generate-bar button { width: 100%; padding: 10px; font-size: 14px; }
+  .total-line { font-size: 12px; color: var(--muted); margin-top: 4px; }
   .total-line strong { color: var(--text); }
 
   /* Preview receipt (mirrors print layout) */
-  #receiptPreview { min-height: 400px; }
+  #receiptPreview { display: flex; align-items: flex-start; justify-content: center; height: 100%; }
   .receipt {
     background: #fff;
     border: 1px solid var(--border);
-    padding: 28px 32px;
+    padding: 20px 24px;
     font-family: Arial, Helvetica, sans-serif;
     color: #111;
     font-size: 13px;
+    width: 100%;
+    max-width: 640px;
   }
-  .receipt h2 { text-align: center; font-size: 17px; margin: 0 0 18px; letter-spacing: 0.5px; }
-  .receipt table.items { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+  .receipt h2 { text-align: center; font-size: 17px; margin: 0 0 14px; letter-spacing: 0.5px; }
+  .receipt table.items { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
   .receipt table.items td { padding: 3px 4px; }
   .receipt table.items td.label { width: 55%; }
   .receipt table.items td.value { text-align: right; font-variant-numeric: tabular-nums; }
   .receipt table.items tr.total td { border-top: 1.5px solid #111; font-weight: 700; padding-top: 6px; }
-  .receipt .info-row { display: flex; margin-bottom: 6px; }
+  .receipt .info-row { display: flex; margin-bottom: 5px; }
   .receipt .info-label { width: 190px; flex-shrink: 0; color: #333; }
   .receipt .info-value { flex: 1; border-bottom: 1px solid #999; padding-bottom: 2px; }
   .receipt .extenso { text-transform: uppercase; font-weight: 600; }
   .receipt .address-box {
-    border: 1px solid #111; padding: 6px 10px; margin: 14px 0 8px; font-weight: 600;
+    border: 1px solid #111; padding: 5px 10px; margin: 10px 0 6px; font-weight: 600;
   }
-  .receipt .period-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .receipt .period-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
   .receipt .period-box { border: 1px solid #999; padding: 3px 10px; }
-  .receipt .signature { margin-top: 46px; text-align: center; }
+  .receipt .signature { margin-top: 30px; text-align: center; }
   .receipt .signature .line { border-top: 1px solid #111; width: 260px; margin: 0 auto 4px; }
 
   @media (max-width: 860px) {
+    body { overflow: auto; }
     .layout { grid-template-columns: 1fr; }
   }
 
   @media print {
-    body { padding: 0; margin: 0; }
+    body { padding: 0; margin: 0; overflow: visible; height: auto; }
     h1, .layout > .card:first-child { display: none; }
-    .layout { display: block; }
-    .layout > .card:last-child { border: none; padding: 0; }
-    #receiptPreview { padding: 0; }
-    .receipt { border: none; padding: 10mm; }
+    .layout { display: block; height: auto; }
+    .layout > .card:last-child { border: none; padding: 0; overflow: visible; height: auto; }
+    #receiptPreview { padding: 0; height: auto; display: block; }
+    .receipt { border: none; padding: 10mm; max-width: none; }
   }
 </style>
 </head>
@@ -215,7 +229,7 @@
     </fieldset>
 
     <div class="generate-bar">
-      <button type="button" class="btn-primary" id="generateBtn">Gerar recibo e imprimir</button>
+      <button type="button" class="btn-primary" id="generateBtn">Imprimir recibo</button>
     </div>
   </div>
 
@@ -419,7 +433,7 @@
     $("valLuz").value = p.luz;
     $("valAgua").value = p.agua;
     $("valIptu").value = p.iptu;
-    updateTotal();
+    renderPreview();
   }
 
   function applyTenant(t) {
@@ -430,8 +444,10 @@
         selectedPropertyId = prop.id;
         renderPropertyPresets();
         applyProperty(prop);
+        return;
       }
     }
+    renderPreview();
   }
 
   function updateTotal() {
@@ -449,8 +465,18 @@
     return aluguel + luz + agua + iptu + multa;
   }
 
-  ["valAluguel", "valLuz", "valAgua", "valIptu", "valMulta"].forEach(function (id) {
-    $(id).addEventListener("input", updateTotal);
+  function renderPreview() {
+    updateTotal();
+    $("receiptPreview").innerHTML = buildReceiptHTML();
+  }
+
+  var LIVE_FIELDS = [
+    "tenantName", "address", "propertyNumber", "rentPeriodLabel",
+    "valAluguel", "valLuz", "valAgua", "valIptu", "valMulta",
+    "periodFrom", "periodTo", "dueDate"
+  ];
+  LIVE_FIELDS.forEach(function (id) {
+    $(id).addEventListener("input", renderPreview);
   });
 
   // ---- Save / delete presets ----
@@ -567,8 +593,7 @@
   }
 
   $("generateBtn").addEventListener("click", function () {
-    $("receiptPreview").innerHTML = buildReceiptHTML();
-    setTimeout(function () { window.print(); }, 50);
+    window.print();
   });
 
   // ---- Init ----
@@ -581,8 +606,7 @@
     var initialProperty = properties.filter(function (p) { return p.id === selectedPropertyId; })[0];
     if (initialProperty) applyProperty(initialProperty);
   }
-  updateTotal();
-  $("receiptPreview").innerHTML = buildReceiptHTML();
+  renderPreview();
 })();
 </script>
 </body>
