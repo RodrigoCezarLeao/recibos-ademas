@@ -28,7 +28,56 @@
     flex-direction: column;
     overflow: hidden;
   }
-  h1 { font-size: 16px; margin: 0 0 8px; flex-shrink: 0; }
+  .page-header {
+    flex-shrink: 0;
+    max-width: 1300px;
+    width: 100%;
+    margin: 0 auto 8px;
+  }
+  h1 { font-size: 16px; margin: 0 0 8px; }
+
+  .tabs {
+    display: flex;
+    gap: 0;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1px;
+    background: #f7f8fa;
+    color: var(--muted);
+    border: none;
+    border-radius: 0;
+    border-bottom: 3px solid transparent;
+    padding: 8px 14px;
+    text-align: left;
+    font-weight: 500;
+  }
+  .tab + .tab { border-left: 1px solid var(--border); }
+  .tab:hover { background: #eef2ff; color: var(--text); }
+  .tab.active {
+    background: #fff;
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+  .tab-title { font-size: 13px; }
+  .tab-sub {
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--muted);
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .tab.active .tab-sub { color: #64748b; }
+
   .layout {
     display: grid;
     grid-template-columns: 45fr 55fr;
@@ -93,17 +142,46 @@
   .generate-bar { margin-top: 4px; }
   .generate-bar button { width: 100%; padding: 10px; font-size: 14px; }
 
-  /* Preview receipt (mirrors print layout) */
-  #receiptPreview { display: flex; align-items: flex-start; justify-content: center; height: 100%; }
-  .receipt {
+  /* Preview: two receipts on one A4 sheet */
+  #receiptPreview {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    height: 100%;
+  }
+  .sheet {
     background: #fff;
     border: 1px solid var(--border);
-    padding: 20px 24px;
+    width: 100%;
+    max-width: 640px;
+    display: flex;
+    flex-direction: column;
+  }
+  .receipt {
+    background: #fff;
+    padding: 16px 20px;
     font-family: Arial, Helvetica, sans-serif;
     color: #111;
     font-size: 13px;
-    width: 100%;
-    max-width: 640px;
+    position: relative;
+    transition: box-shadow 0.15s ease;
+  }
+  .receipt.editing {
+    box-shadow: inset 0 0 0 2px var(--accent);
+  }
+  .receipt-badge {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 999px;
+    padding: 2px 8px;
   }
   .receipt h2 { text-align: center; font-size: 17px; margin: 0 0 14px; letter-spacing: 0.5px; }
   .receipt table.items { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
@@ -124,25 +202,86 @@
     border: 1px dashed #999; border-radius: 6px; padding: 8px 10px; margin-top: 10px;
     font-size: 12px; background: #fafafa; line-height: 1.5;
   }
-  .receipt .signature { margin-top: 30px; text-align: center; }
+  .receipt .signature { margin-top: 24px; text-align: center; }
   .receipt .signature .line { border-top: 1px solid #111; width: 260px; margin: 0 auto 4px; }
+
+  .cut-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #9ca3af;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    user-select: none;
+    padding: 0 12px;
+  }
+  .cut-line::before,
+  .cut-line::after {
+    content: "";
+    flex: 1;
+    border-top: 1px dashed #bbb;
+  }
 
   @media (max-width: 860px) {
     body { overflow: auto; }
     .layout { grid-template-columns: 1fr; }
   }
 
+  @page {
+    size: A4 portrait;
+    margin: 8mm;
+  }
+
   @media print {
-    body { padding: 0; margin: 0; overflow: visible; height: auto; }
-    h1, .layout > .card:first-child { display: none; }
-    .layout { display: block; height: auto; }
+    body { padding: 0; margin: 0; overflow: visible; height: auto; background: #fff; }
+    .page-header, .layout > .card:first-child { display: none !important; }
+    .layout { display: block; height: auto; max-width: none; }
     .layout > .card:last-child { border: none; padding: 0; overflow: visible; height: auto; }
     #receiptPreview { padding: 0; height: auto; display: block; }
-    .receipt { border: none; padding: 10mm; max-width: none; }
+    .sheet {
+      border: none;
+      max-width: none;
+      width: 100%;
+      height: 281mm; /* A4 297mm − 16mm de margem */
+      display: flex;
+      flex-direction: column;
+    }
+    .receipt {
+      flex: 1 1 50%;
+      height: 50%;
+      max-height: 50%;
+      overflow: hidden;
+      padding: 6mm 8mm;
+      box-shadow: none !important;
+    }
+    .receipt-badge { display: none; }
+    .cut-line {
+      flex: 0 0 auto;
+      padding: 0;
+      color: #888;
+      font-size: 8px;
+    }
+    .cut-line::before,
+    .cut-line::after { border-top-color: #999; }
   }
 </style>
 </head>
 <body>
+
+<div class="page-header">
+  <h1>Gerador de Recibos de Aluguel</h1>
+  <div class="tabs" id="receiptTabs" role="tablist">
+    <button type="button" class="tab active" data-index="0" role="tab" aria-selected="true">
+      <span class="tab-title">Recibo 1</span>
+      <span class="tab-sub" id="tabSub0">Sem nome</span>
+    </button>
+    <button type="button" class="tab" data-index="1" role="tab" aria-selected="false">
+      <span class="tab-title">Recibo 2</span>
+      <span class="tab-sub" id="tabSub1">Sem nome</span>
+    </button>
+  </div>
+</div>
 
 <div class="layout">
   <!-- FORM -->
@@ -242,13 +381,13 @@
     </fieldset>
 
     <div class="generate-bar">
-      <button type="button" class="btn-primary" id="generateBtn">Imprimir recibo</button>
+      <button type="button" class="btn-primary" id="generateBtn">Imprimir os 2 recibos (1 folha A4)</button>
     </div>
   </div>
 
   <!-- PREVIEW -->
   <div class="card">
-    <div id="receiptPreview"><p style="color:#9ca3af;font-size:13px;">A pré-visualização do recibo aparecerá aqui.</p></div>
+    <div id="receiptPreview"><p style="color:#9ca3af;font-size:13px;">A pré-visualização dos recibos aparecerá aqui.</p></div>
   </div>
 </div>
 
@@ -258,6 +397,13 @@
 
   var STORAGE_PROPERTIES = "recibos_properties_v1";
   var STORAGE_TENANTS = "recibos_tenants_v1";
+  var STORAGE_DRAFTS = "recibos_drafts_v1";
+
+  var FIELD_IDS = [
+    "tenantName", "address", "propertyNumber", "rentPeriodLabel",
+    "valAluguel", "valLuz", "valAgua", "valIptu", "valMulta",
+    "periodFrom", "periodTo", "dueDate"
+  ];
 
   var DEFAULT_PROPERTIES = [
     {
@@ -305,8 +451,66 @@
 
   var properties = loadList(STORAGE_PROPERTIES, DEFAULT_PROPERTIES);
   var tenants = loadList(STORAGE_TENANTS, DEFAULT_TENANTS);
-  var selectedPropertyId = properties.length ? properties[0].id : null;
-  var selectedTenantId = tenants.length ? tenants[0].id : null;
+
+  function emptyReceipt() {
+    return {
+      tenantName: "",
+      address: "",
+      propertyNumber: "",
+      rentPeriodLabel: "01 Mês",
+      valAluguel: "",
+      valLuz: "",
+      valAgua: "",
+      valIptu: "",
+      valMulta: "",
+      periodFrom: "",
+      periodTo: "",
+      dueDate: "",
+      showPix: false,
+      selectedPropertyId: null,
+      selectedTenantId: null
+    };
+  }
+
+  function receiptFromTenant(tenant) {
+    var data = emptyReceipt();
+    if (!tenant) return data;
+    data.tenantName = tenant.label || "";
+    data.selectedTenantId = tenant.id || null;
+    data.selectedPropertyId = tenant.propertyId || null;
+    var prop = tenant.propertyId
+      ? properties.filter(function (p) { return p.id === tenant.propertyId; })[0]
+      : null;
+    if (prop) {
+      data.address = prop.address;
+      data.propertyNumber = prop.propertyNumber;
+      data.valAluguel = prop.aluguel;
+      data.valLuz = prop.luz;
+      data.valAgua = prop.agua;
+      data.valIptu = prop.iptu;
+    }
+    return data;
+  }
+
+  function loadDrafts() {
+    try {
+      var raw = localStorage.getItem(STORAGE_DRAFTS);
+      if (!raw) return null;
+      var parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length === 2) return parsed;
+    } catch (e) {}
+    return null;
+  }
+
+  function saveDrafts() {
+    localStorage.setItem(STORAGE_DRAFTS, JSON.stringify(receipts));
+  }
+
+  var receipts = loadDrafts() || [
+    receiptFromTenant(tenants[0]),
+    receiptFromTenant(tenants[1] || tenants[0])
+  ];
+  var activeIndex = 0;
 
   var $ = function (id) { return document.getElementById(id); };
 
@@ -392,10 +596,71 @@
     return "ZERO REAIS";
   }
 
+  // ---- Form state (per-receipt) ----
+  function collectFormData() {
+    var data = emptyReceipt();
+    FIELD_IDS.forEach(function (id) {
+      data[id] = $(id).value;
+    });
+    data.showPix = $("showPix").checked;
+    data.selectedPropertyId = receipts[activeIndex].selectedPropertyId;
+    data.selectedTenantId = receipts[activeIndex].selectedTenantId;
+    return data;
+  }
+
+  function applyFormData(data) {
+    FIELD_IDS.forEach(function (id) {
+      $(id).value = data[id] != null ? data[id] : "";
+    });
+    $("showPix").checked = !!data.showPix;
+    renderPropertyPresets();
+    renderTenantPresets();
+    updateTotal();
+  }
+
+  function syncCurrent() {
+    receipts[activeIndex] = collectFormData();
+    saveDrafts();
+    updateTabLabels();
+  }
+
+  function switchReceipt(index) {
+    if (index === activeIndex) return;
+    syncCurrent();
+    activeIndex = index;
+    applyFormData(receipts[activeIndex]);
+    updateTabUI();
+    renderPreview();
+  }
+
+  function updateTabLabels() {
+    for (var i = 0; i < 2; i++) {
+      var name = (receipts[i].tenantName || "").trim();
+      $("tabSub" + i).textContent = name || "Sem nome";
+    }
+  }
+
+  function updateTabUI() {
+    var buttons = document.querySelectorAll(".tab");
+    for (var i = 0; i < buttons.length; i++) {
+      var isActive = Number(buttons[i].getAttribute("data-index")) === activeIndex;
+      buttons[i].classList.toggle("active", isActive);
+      buttons[i].setAttribute("aria-selected", isActive ? "true" : "false");
+    }
+    updateTabLabels();
+  }
+
+  document.getElementById("receiptTabs").addEventListener("click", function (e) {
+    var btn = e.target.closest(".tab");
+    if (!btn) return;
+    switchReceipt(Number(btn.getAttribute("data-index")));
+  });
+
   // ---- Rendering preset lists ----
   function renderPropertyPresets() {
     var container = $("propertyPresets");
     container.innerHTML = "";
+    var selectedId = receipts[activeIndex].selectedPropertyId;
     properties.forEach(function (p) {
       var wrap = document.createElement("label");
       wrap.className = "preset-option";
@@ -403,9 +668,9 @@
       radio.type = "radio";
       radio.name = "propertyPreset";
       radio.value = p.id;
-      radio.checked = p.id === selectedPropertyId;
+      radio.checked = p.id === selectedId;
       radio.addEventListener("change", function () {
-        selectedPropertyId = p.id;
+        receipts[activeIndex].selectedPropertyId = p.id;
         applyProperty(p);
       });
       var span = document.createElement("span");
@@ -419,6 +684,7 @@
   function renderTenantPresets() {
     var container = $("tenantPresets");
     container.innerHTML = "";
+    var selectedId = receipts[activeIndex].selectedTenantId;
     tenants.forEach(function (t) {
       var wrap = document.createElement("label");
       wrap.className = "preset-option";
@@ -426,9 +692,9 @@
       radio.type = "radio";
       radio.name = "tenantPreset";
       radio.value = t.id;
-      radio.checked = t.id === selectedTenantId;
+      radio.checked = t.id === selectedId;
       radio.addEventListener("change", function () {
-        selectedTenantId = t.id;
+        receipts[activeIndex].selectedTenantId = t.id;
         applyTenant(t);
       });
       var span = document.createElement("span");
@@ -446,7 +712,7 @@
     $("valLuz").value = p.luz;
     $("valAgua").value = p.agua;
     $("valIptu").value = p.iptu;
-    renderPreview();
+    onFormChange();
   }
 
   function applyTenant(t) {
@@ -454,49 +720,55 @@
     if (t.propertyId) {
       var prop = properties.filter(function (p) { return p.id === t.propertyId; })[0];
       if (prop) {
-        selectedPropertyId = prop.id;
+        receipts[activeIndex].selectedPropertyId = prop.id;
         renderPropertyPresets();
         applyProperty(prop);
         return;
       }
     }
-    renderPreview();
+    onFormChange();
   }
 
   function updateTotal() {
-    var total = getTotal();
+    var total = getTotal(collectFormData());
     $("totalDisplay").value = fmtMoney(total);
     return total;
   }
 
-  function getTotal() {
-    var aluguel = parseFloat($("valAluguel").value) || 0;
-    var luz = parseFloat($("valLuz").value) || 0;
-    var agua = parseFloat($("valAgua").value) || 0;
-    var iptu = parseFloat($("valIptu").value) || 0;
-    var multa = parseFloat($("valMulta").value) || 0;
+  function getTotal(data) {
+    var aluguel = parseFloat(data.valAluguel) || 0;
+    var luz = parseFloat(data.valLuz) || 0;
+    var agua = parseFloat(data.valAgua) || 0;
+    var iptu = parseFloat(data.valIptu) || 0;
+    var multa = parseFloat(data.valMulta) || 0;
     return aluguel + luz + agua + iptu + multa;
+  }
+
+  function onFormChange() {
+    syncCurrent();
+    updateTotal();
+    renderPreview();
   }
 
   function renderPreview() {
     updateTotal();
-    $("receiptPreview").innerHTML = buildReceiptHTML();
+    $("receiptPreview").innerHTML =
+      '<div class="sheet">' +
+        buildReceiptHTML(receipts[0], 0) +
+        '<div class="cut-line">cortar</div>' +
+        buildReceiptHTML(receipts[1], 1) +
+      "</div>";
   }
 
-  var LIVE_FIELDS = [
-    "tenantName", "address", "propertyNumber", "rentPeriodLabel",
-    "valAluguel", "valLuz", "valAgua", "valIptu", "valMulta",
-    "periodFrom", "periodTo", "dueDate"
-  ];
-  LIVE_FIELDS.forEach(function (id) {
-    $(id).addEventListener("input", renderPreview);
+  FIELD_IDS.forEach(function (id) {
+    $(id).addEventListener("input", onFormChange);
   });
-  $("showPix").addEventListener("change", renderPreview);
+  $("showPix").addEventListener("change", onFormChange);
 
   // ---- Save / delete presets ----
   function slugify(str) {
     return str.toLowerCase()
-      .normalize("NFD").replace(/[̀-ͯ]/g, "")
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)/g, "") + "-" + Date.now();
   }
@@ -517,67 +789,75 @@
     };
     properties.push(p);
     saveList(STORAGE_PROPERTIES, properties);
-    selectedPropertyId = id;
+    receipts[activeIndex].selectedPropertyId = id;
     renderPropertyPresets();
   });
 
   $("deleteProperty").addEventListener("click", function () {
-    if (!selectedPropertyId) return;
+    var selectedId = receipts[activeIndex].selectedPropertyId;
+    if (!selectedId) return;
     if (!confirm("Remover o imóvel selecionado da lista salva?")) return;
-    properties = properties.filter(function (p) { return p.id !== selectedPropertyId; });
+    properties = properties.filter(function (p) { return p.id !== selectedId; });
     saveList(STORAGE_PROPERTIES, properties);
-    selectedPropertyId = properties.length ? properties[0].id : null;
+    receipts[activeIndex].selectedPropertyId = properties.length ? properties[0].id : null;
     renderPropertyPresets();
-    if (selectedPropertyId) applyProperty(properties[0]);
+    if (receipts[activeIndex].selectedPropertyId) applyProperty(properties[0]);
   });
 
   $("saveTenant").addEventListener("click", function () {
     var name = $("tenantName").value.trim();
     if (!name) { alert("Preencha o nome antes de salvar."); return; }
     var id = slugify(name);
-    tenants.push({ id: id, label: name, propertyId: selectedPropertyId });
+    tenants.push({
+      id: id,
+      label: name,
+      propertyId: receipts[activeIndex].selectedPropertyId
+    });
     saveList(STORAGE_TENANTS, tenants);
-    selectedTenantId = id;
+    receipts[activeIndex].selectedTenantId = id;
     renderTenantPresets();
   });
 
   $("deleteTenant").addEventListener("click", function () {
-    if (!selectedTenantId) return;
+    var selectedId = receipts[activeIndex].selectedTenantId;
+    if (!selectedId) return;
     if (!confirm("Remover o nome selecionado da lista salva?")) return;
-    tenants = tenants.filter(function (t) { return t.id !== selectedTenantId; });
+    tenants = tenants.filter(function (t) { return t.id !== selectedId; });
     saveList(STORAGE_TENANTS, tenants);
-    selectedTenantId = tenants.length ? tenants[0].id : null;
+    receipts[activeIndex].selectedTenantId = tenants.length ? tenants[0].id : null;
     renderTenantPresets();
-    if (selectedTenantId) applyTenant(tenants[0]);
+    if (receipts[activeIndex].selectedTenantId) applyTenant(tenants[0]);
   });
 
   // ---- Generate receipt ----
-  function buildReceiptHTML() {
-    var total = getTotal();
+  function buildReceiptHTML(data, index) {
+    var total = getTotal(data);
     var extenso = valorPorExtenso(total);
-    var tenantName = $("tenantName").value.trim() || "-";
-    var address = $("address").value.trim() || "-";
-    var propertyNumber = $("propertyNumber").value.trim() || "-";
-    var rentPeriodLabel = $("rentPeriodLabel").value.trim() || "01 Mês";
-    var periodFrom = fmtDateBR($("periodFrom").value);
-    var periodTo = fmtDateBR($("periodTo").value);
-    var dueDate = fmtDateBR($("dueDate").value);
+    var tenantName = (data.tenantName || "").trim() || "-";
+    var address = (data.address || "").trim() || "-";
+    var propertyNumber = (data.propertyNumber || "").trim() || "-";
+    var rentPeriodLabel = (data.rentPeriodLabel || "").trim() || "01 Mês";
+    var periodFrom = fmtDateBR(data.periodFrom);
+    var periodTo = fmtDateBR(data.periodTo);
+    var dueDate = fmtDateBR(data.dueDate);
 
-    var aluguel = parseFloat($("valAluguel").value) || 0;
-    var luz = parseFloat($("valLuz").value) || 0;
-    var agua = parseFloat($("valAgua").value) || 0;
-    var iptu = parseFloat($("valIptu").value) || 0;
-    var multa = parseFloat($("valMulta").value) || 0;
-    var showPix = $("showPix").checked;
-    var pixHTML = showPix
+    var aluguel = parseFloat(data.valAluguel) || 0;
+    var luz = parseFloat(data.valLuz) || 0;
+    var agua = parseFloat(data.valAgua) || 0;
+    var iptu = parseFloat(data.valIptu) || 0;
+    var multa = parseFloat(data.valMulta) || 0;
+    var pixHTML = data.showPix
       ? '<div class="pix-box">' +
           '<strong>Pagamento via PIX</strong><br>' +
           'Chave (CPF): 111.517.147-04 &nbsp;&bull;&nbsp; Banco Itaú' +
         '</div>'
       : '';
 
+    var editingClass = index === activeIndex ? " editing" : "";
+
     return '' +
-    '<div class="receipt">' +
+    '<div class="receipt' + editingClass + '">' +
+      '<span class="receipt-badge">Recibo ' + (index + 1) + '</span>' +
       '<h2>RECIBO DE ALUGUEL</h2>' +
       '<table class="items">' +
         '<tr><td class="label">Aluguel</td><td class="value">' + fmtMoney(aluguel) + '</td></tr>' +
@@ -616,19 +896,13 @@
   }
 
   $("generateBtn").addEventListener("click", function () {
+    syncCurrent();
     window.print();
   });
 
   // ---- Init ----
-  renderPropertyPresets();
-  renderTenantPresets();
-  if (selectedTenantId) {
-    var initialTenant = tenants.filter(function (t) { return t.id === selectedTenantId; })[0];
-    if (initialTenant) applyTenant(initialTenant);
-  } else if (selectedPropertyId) {
-    var initialProperty = properties.filter(function (p) { return p.id === selectedPropertyId; })[0];
-    if (initialProperty) applyProperty(initialProperty);
-  }
+  applyFormData(receipts[activeIndex]);
+  updateTabUI();
   renderPreview();
 })();
 </script>
