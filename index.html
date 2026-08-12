@@ -62,11 +62,22 @@
   .tab + .tab { border-left: 1px solid var(--border); }
   .tab:hover { background: #eef2ff; color: var(--text); }
   .tab.active {
-    background: #fff;
-    color: var(--accent);
-    border-bottom-color: var(--accent);
+    background: var(--accent);
+    color: #fff;
+    border-bottom-color: var(--accent-dark);
   }
-  .tab-title { font-size: 13px; }
+  .tab-title { font-size: 13px; display: flex; align-items: center; gap: 8px; }
+  .tab-pill {
+    display: none;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: rgba(255,255,255,0.22);
+    border-radius: 999px;
+    padding: 2px 7px;
+  }
+  .tab.active .tab-pill { display: inline-block; }
   .tab-sub {
     font-size: 11px;
     font-weight: 400;
@@ -76,7 +87,28 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  .tab.active .tab-sub { color: #64748b; }
+  .tab.active .tab-sub { color: rgba(255,255,255,0.85); }
+
+  .form-editing-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #eff6ff;
+    border: 1px solid #93c5fd;
+    color: #1e40af;
+    border-radius: 8px;
+    padding: 7px 10px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .form-editing-banner .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
 
   .layout {
     display: grid;
@@ -151,7 +183,6 @@
   }
   .sheet {
     background: #fff;
-    border: 1px solid var(--border);
     width: 100%;
     max-width: 640px;
     display: flex;
@@ -159,29 +190,44 @@
   }
   .receipt {
     background: #fff;
+    border: 1px solid #111;
     padding: 16px 20px;
     font-family: Arial, Helvetica, sans-serif;
     color: #111;
     font-size: 13px;
     position: relative;
-    transition: box-shadow 0.15s ease;
+    cursor: pointer;
+    opacity: 0.42;
+    filter: grayscale(0.35);
+    transition: opacity 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
   }
+  .receipt:hover { opacity: 0.7; filter: grayscale(0.15); }
   .receipt.editing {
-    box-shadow: inset 0 0 0 2px var(--accent);
+    opacity: 1;
+    filter: none;
+    cursor: default;
+    outline: 3px solid var(--accent);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.16);
   }
   .receipt-badge {
     position: absolute;
     top: 8px;
     right: 10px;
     font-size: 10px;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: var(--accent);
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
+    color: var(--muted);
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
     border-radius: 999px;
     padding: 2px 8px;
+  }
+  .receipt.editing .receipt-badge {
+    color: #fff;
+    background: var(--accent);
+    border-color: var(--accent);
   }
   .receipt h2 { text-align: center; font-size: 17px; margin: 0 0 14px; letter-spacing: 0.5px; }
   .receipt table.items { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
@@ -215,6 +261,7 @@
     text-transform: uppercase;
     user-select: none;
     padding: 0 12px;
+    margin: 8px 0;
   }
   .cut-line::before,
   .cut-line::after {
@@ -230,10 +277,14 @@
 
   @page {
     size: A4 portrait;
-    margin: 8mm;
+    margin: 16mm 10mm 10mm 10mm;
   }
 
   @media print {
+    * {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
     body { padding: 0; margin: 0; overflow: visible; height: auto; background: #fff; }
     .page-header, .layout > .card:first-child { display: none !important; }
     .layout { display: block; height: auto; max-width: none; }
@@ -243,27 +294,32 @@
       border: none;
       max-width: none;
       width: 100%;
-      height: 281mm; /* A4 297mm − 16mm de margem */
+      height: 271mm; /* A4 297mm − 16mm topo − 10mm base */
       display: flex;
       flex-direction: column;
     }
     .receipt {
-      flex: 1 1 50%;
-      height: 50%;
-      max-height: 50%;
-      overflow: hidden;
+      flex: 1 1 0;
+      overflow: visible;
       padding: 6mm 8mm;
+      border: 0.4mm solid #000 !important;
+      outline: none !important;
       box-shadow: none !important;
+      background: #fff;
+      opacity: 1 !important;
+      filter: none !important;
+      cursor: default;
     }
     .receipt-badge { display: none; }
     .cut-line {
       flex: 0 0 auto;
+      margin: 3.5mm 0;
       padding: 0;
-      color: #888;
+      color: #666;
       font-size: 8px;
     }
     .cut-line::before,
-    .cut-line::after { border-top-color: #999; }
+    .cut-line::after { border-top: 0.3mm dashed #666; }
   }
 </style>
 </head>
@@ -273,11 +329,11 @@
   <h1>Gerador de Recibos de Aluguel</h1>
   <div class="tabs" id="receiptTabs" role="tablist">
     <button type="button" class="tab active" data-index="0" role="tab" aria-selected="true">
-      <span class="tab-title">Recibo 1</span>
+      <span class="tab-title">Recibo 1 <span class="tab-pill">editando</span></span>
       <span class="tab-sub" id="tabSub0">Sem nome</span>
     </button>
     <button type="button" class="tab" data-index="1" role="tab" aria-selected="false">
-      <span class="tab-title">Recibo 2</span>
+      <span class="tab-title">Recibo 2 <span class="tab-pill">editando</span></span>
       <span class="tab-sub" id="tabSub1">Sem nome</span>
     </button>
   </div>
@@ -286,6 +342,10 @@
 <div class="layout">
   <!-- FORM -->
   <div class="card">
+    <div class="form-editing-banner" id="formEditingBanner">
+      <span class="dot"></span>
+      <span id="formEditingLabel">Editando Recibo 1</span>
+    </div>
     <div class="row" style="margin-bottom:8px;">
       <fieldset style="flex:1;margin-bottom:0;">
         <legend>Imóvel (endereço salvo)</legend>
@@ -472,22 +532,20 @@
     };
   }
 
-  function receiptFromTenant(tenant) {
+  function receiptFromDefaults(tenant, property) {
     var data = emptyReceipt();
-    if (!tenant) return data;
-    data.tenantName = tenant.label || "";
-    data.selectedTenantId = tenant.id || null;
-    data.selectedPropertyId = tenant.propertyId || null;
-    var prop = tenant.propertyId
-      ? properties.filter(function (p) { return p.id === tenant.propertyId; })[0]
-      : null;
-    if (prop) {
-      data.address = prop.address;
-      data.propertyNumber = prop.propertyNumber;
-      data.valAluguel = prop.aluguel;
-      data.valLuz = prop.luz;
-      data.valAgua = prop.agua;
-      data.valIptu = prop.iptu;
+    if (tenant) {
+      data.tenantName = tenant.label || "";
+      data.selectedTenantId = tenant.id || null;
+    }
+    if (property) {
+      data.selectedPropertyId = property.id || null;
+      data.address = property.address;
+      data.propertyNumber = property.propertyNumber;
+      data.valAluguel = property.aluguel;
+      data.valLuz = property.luz;
+      data.valAgua = property.agua;
+      data.valIptu = property.iptu;
     }
     return data;
   }
@@ -507,8 +565,8 @@
   }
 
   var receipts = loadDrafts() || [
-    receiptFromTenant(tenants[0]),
-    receiptFromTenant(tenants[1] || tenants[0])
+    receiptFromDefaults(tenants[0], properties[0]),
+    receiptFromDefaults(tenants[1] || tenants[0], properties[1] || properties[0])
   ];
   var activeIndex = 0;
 
@@ -638,6 +696,10 @@
       var name = (receipts[i].tenantName || "").trim();
       $("tabSub" + i).textContent = name || "Sem nome";
     }
+    var activeName = (receipts[activeIndex].tenantName || "").trim();
+    $("formEditingLabel").textContent = activeName
+      ? "Editando Recibo " + (activeIndex + 1) + " — " + activeName
+      : "Editando Recibo " + (activeIndex + 1);
   }
 
   function updateTabUI() {
@@ -654,6 +716,13 @@
     var btn = e.target.closest(".tab");
     if (!btn) return;
     switchReceipt(Number(btn.getAttribute("data-index")));
+  });
+
+  $("receiptPreview").addEventListener("click", function (e) {
+    var receipt = e.target.closest(".receipt");
+    if (!receipt) return;
+    var index = Number(receipt.getAttribute("data-index"));
+    if (!isNaN(index)) switchReceipt(index);
   });
 
   // ---- Rendering preset lists ----
@@ -717,15 +786,6 @@
 
   function applyTenant(t) {
     $("tenantName").value = t.label;
-    if (t.propertyId) {
-      var prop = properties.filter(function (p) { return p.id === t.propertyId; })[0];
-      if (prop) {
-        receipts[activeIndex].selectedPropertyId = prop.id;
-        renderPropertyPresets();
-        applyProperty(prop);
-        return;
-      }
-    }
     onFormChange();
   }
 
@@ -854,51 +914,152 @@
       : '';
 
     var editingClass = index === activeIndex ? " editing" : "";
+    var inner = buildReceiptInnerHTML({
+      tenantName: tenantName,
+      address: address,
+      propertyNumber: propertyNumber,
+      rentPeriodLabel: rentPeriodLabel,
+      periodFrom: periodFrom,
+      periodTo: periodTo,
+      dueDate: dueDate,
+      aluguel: aluguel,
+      luz: luz,
+      agua: agua,
+      iptu: iptu,
+      multa: multa,
+      total: total,
+      extenso: extenso,
+      pixHTML: pixHTML
+    });
 
     return '' +
-    '<div class="receipt' + editingClass + '">' +
-      '<span class="receipt-badge">Recibo ' + (index + 1) + '</span>' +
-      '<h2>RECIBO DE ALUGUEL</h2>' +
-      '<table class="items">' +
-        '<tr><td class="label">Aluguel</td><td class="value">' + fmtMoney(aluguel) + '</td></tr>' +
-        '<tr><td class="label">Luz sv.</td><td class="value">' + fmtMoney(luz) + '</td></tr>' +
-        '<tr><td class="label">Água</td><td class="value">' + fmtMoney(agua) + '</td></tr>' +
-        '<tr><td class="label">Iptu</td><td class="value">' + fmtMoney(iptu) + '</td></tr>' +
-        '<tr><td class="label">Multa</td><td class="value">' + (multa > 0 ? fmtMoney(multa) : "") + '</td></tr>' +
-        '<tr class="total"><td class="label">Total</td><td class="value">' + fmtMoney(total) + '</td></tr>' +
-      '</table>' +
-
-      '<div class="info-row"><div class="info-label">Recebi de</div><div class="info-value">' + tenantName + '</div></div>' +
-      '<div class="info-row"><div class="info-label">A quantia de</div><div class="info-value extenso">' + extenso + '</div></div>' +
-      '<div class="info-row"><div class="info-label">Proveniente do aluguel de</div><div class="info-value">' + rentPeriodLabel + '</div></div>' +
-      '<div class="info-row"><div class="info-label">Do imóvel n°</div><div class="info-value">' + propertyNumber + '</div></div>' +
-
-      '<div class="address-box">' + address + '</div>' +
-
-      '<div class="period-row">' +
-        '<span>Correspondente ao período de</span>' +
-        '<span class="period-box">' + (periodFrom || "&nbsp;&nbsp;&nbsp;&nbsp;") + '</span>' +
-        '<span>a</span>' +
-        '<span class="period-box">' + (periodTo || "&nbsp;&nbsp;&nbsp;&nbsp;") + '</span>' +
-      '</div>' +
-      '<div class="period-row">' +
-        '<span>À vencer em</span>' +
-        '<span class="period-box">' + (dueDate || "&nbsp;&nbsp;&nbsp;&nbsp;") + '</span>' +
-      '</div>' +
-
-      pixHTML +
-
-      '<div class="signature">' +
-        '<div class="line"></div>' +
-        '<div>Assinatura</div>' +
-      '</div>' +
+    '<div class="receipt' + editingClass + '" data-index="' + index + '">' +
+      '<span class="receipt-badge">' + (index === activeIndex ? "Editando recibo " : "Recibo ") + (index + 1) + '</span>' +
+      inner +
     '</div>';
   }
 
-  $("generateBtn").addEventListener("click", function () {
+  function buildReceiptInnerHTML(d) {
+    return '' +
+      '<h2>RECIBO DE ALUGUEL</h2>' +
+      '<table class="items">' +
+        '<tr><td class="label">Aluguel</td><td class="value">' + fmtMoney(d.aluguel) + '</td></tr>' +
+        '<tr><td class="label">Luz sv.</td><td class="value">' + fmtMoney(d.luz) + '</td></tr>' +
+        '<tr><td class="label">Água</td><td class="value">' + fmtMoney(d.agua) + '</td></tr>' +
+        '<tr><td class="label">Iptu</td><td class="value">' + fmtMoney(d.iptu) + '</td></tr>' +
+        '<tr><td class="label">Multa</td><td class="value">' + (d.multa > 0 ? fmtMoney(d.multa) : "") + '</td></tr>' +
+        '<tr class="total"><td class="label">Total</td><td class="value">' + fmtMoney(d.total) + '</td></tr>' +
+      '</table>' +
+      '<div class="info-row"><div class="info-label">Recebi de</div><div class="info-value">' + d.tenantName + '</div></div>' +
+      '<div class="info-row"><div class="info-label">A quantia de</div><div class="info-value extenso">' + d.extenso + '</div></div>' +
+      '<div class="info-row"><div class="info-label">Proveniente do aluguel de</div><div class="info-value">' + d.rentPeriodLabel + '</div></div>' +
+      '<div class="info-row"><div class="info-label">Do imóvel n°</div><div class="info-value">' + d.propertyNumber + '</div></div>' +
+      '<div class="address-box">' + d.address + '</div>' +
+      '<div class="period-row">' +
+        '<span>Correspondente ao período de</span>' +
+        '<span class="period-box">' + (d.periodFrom || "&nbsp;&nbsp;&nbsp;&nbsp;") + '</span>' +
+        '<span>a</span>' +
+        '<span class="period-box">' + (d.periodTo || "&nbsp;&nbsp;&nbsp;&nbsp;") + '</span>' +
+      '</div>' +
+      '<div class="period-row">' +
+        '<span>À vencer em</span>' +
+        '<span class="period-box">' + (d.dueDate || "&nbsp;&nbsp;&nbsp;&nbsp;") + '</span>' +
+      '</div>' +
+      d.pixHTML +
+      '<div class="signature">' +
+        '<div class="line"></div>' +
+        '<div>Assinatura</div>' +
+      '</div>';
+  }
+
+  function framedReceiptHTML(data) {
+    var total = getTotal(data);
+    var pixHTML = data.showPix
+      ? '<div class="pix-box"><strong>Pagamento via PIX</strong><br>Chave (CPF): 111.517.147-04 &nbsp;&bull;&nbsp; Banco Itaú</div>'
+      : "";
+    var inner = buildReceiptInnerHTML({
+      tenantName: (data.tenantName || "").trim() || "-",
+      address: (data.address || "").trim() || "-",
+      propertyNumber: (data.propertyNumber || "").trim() || "-",
+      rentPeriodLabel: (data.rentPeriodLabel || "").trim() || "01 Mês",
+      periodFrom: fmtDateBR(data.periodFrom),
+      periodTo: fmtDateBR(data.periodTo),
+      dueDate: fmtDateBR(data.dueDate),
+      aluguel: parseFloat(data.valAluguel) || 0,
+      luz: parseFloat(data.valLuz) || 0,
+      agua: parseFloat(data.valAgua) || 0,
+      iptu: parseFloat(data.valIptu) || 0,
+      multa: parseFloat(data.valMulta) || 0,
+      total: total,
+      extenso: valorPorExtenso(total),
+      pixHTML: pixHTML
+    });
+    return '' +
+      '<table class="frame" border="1" cellspacing="0" cellpadding="0" width="100%">' +
+        '<tr><td class="frame-cell" valign="top">' + inner + '</td></tr>' +
+      '</table>';
+  }
+
+  var PRINT_CSS = '' +
+    '@page { size: A4 portrait; margin: 16mm 12mm 12mm 12mm; }' +
+    '* { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }' +
+    'html, body { margin: 0; padding: 0; background: #fff; color: #000; }' +
+    'body { font-family: Arial, Helvetica, sans-serif; font-size: 11pt; }' +
+    'h2 { text-align: center; font-size: 15pt; margin: 0 0 10pt; letter-spacing: 0.5px; }' +
+    'table.frame { width: 100%; height: 122mm; border: 1pt solid #000; border-collapse: collapse; }' +
+    'td.frame-cell { border: 1pt solid #000; padding: 6mm 8mm; vertical-align: top; }' +
+    'table.items { width: 100%; border-collapse: collapse; margin-bottom: 8pt; }' +
+    'table.items td { padding: 2pt 4pt; }' +
+    'table.items td.label { width: 55%; }' +
+    'table.items td.value { text-align: right; }' +
+    'table.items tr.total td { border-top: 1.5pt solid #000; font-weight: 700; padding-top: 5pt; }' +
+    '.info-row { display: table; width: 100%; margin-bottom: 4pt; }' +
+    '.info-label { display: table-cell; width: 190px; color: #000; }' +
+    '.info-value { display: table-cell; border-bottom: 0.75pt solid #000; padding-bottom: 1pt; }' +
+    '.extenso { text-transform: uppercase; font-weight: 700; }' +
+    '.address-box { border: 1pt solid #000; padding: 4pt 8pt; margin: 8pt 0 6pt; font-weight: 700; }' +
+    '.period-row { margin-bottom: 4pt; }' +
+    '.period-box { display: inline-block; border: 0.75pt solid #000; padding: 2pt 8pt; margin: 0 4pt; }' +
+    '.pix-box { border: 0.75pt dashed #000; padding: 6pt 8pt; margin-top: 8pt; font-size: 10pt; }' +
+    '.signature { margin-top: 22pt; text-align: center; }' +
+    '.signature .line { border-top: 1pt solid #000; width: 220pt; margin: 0 auto 4pt; }' +
+    '.cut { height: 8mm; margin: 0; text-align: center; font-size: 8pt; letter-spacing: 0.18em; text-transform: uppercase; color: #333; line-height: 8mm; }' +
+    '.cut span { padding: 0 8pt; }' +
+    '.cut { background-image: linear-gradient(to right, #333 4pt, transparent 4pt); background-size: 8pt 0.75pt; background-repeat: repeat-x; background-position: center; }';
+
+  function buildPrintDocument() {
+    return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">' +
+      '<title>Recibos de Aluguel</title><style>' + PRINT_CSS + '</style></head><body>' +
+      framedReceiptHTML(receipts[0]) +
+      '<div class="cut"><span>cortar</span></div>' +
+      framedReceiptHTML(receipts[1]) +
+      '</body></html>';
+  }
+
+  function printSheet() {
     syncCurrent();
-    window.print();
-  });
+    var old = document.getElementById("printFrame");
+    if (old) old.parentNode.removeChild(old);
+
+    var iframe = document.createElement("iframe");
+    iframe.id = "printFrame";
+    iframe.setAttribute("aria-hidden", "true");
+    iframe.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;";
+    document.body.appendChild(iframe);
+
+    var doc = iframe.contentDocument || iframe.contentWindow.document;
+    doc.open();
+    doc.write(buildPrintDocument());
+    doc.close();
+
+    function doPrint() {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+    }
+    setTimeout(doPrint, 80);
+  }
+
+  $("generateBtn").addEventListener("click", printSheet);
 
   // ---- Init ----
   applyFormData(receipts[activeIndex]);
