@@ -1005,13 +1005,14 @@
   }
 
   var PRINT_CSS = '' +
-    '@page { size: A4 portrait; margin: 16mm 12mm 12mm 12mm; }' +
+    '@page { size: A4 portrait; margin: 28mm 18mm 16mm 18mm; }' +
     '* { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }' +
     'html, body { margin: 0; padding: 0; background: #fff; color: #000; }' +
     'body { font-family: Arial, Helvetica, sans-serif; font-size: 11pt; }' +
-    'h2 { text-align: center; font-size: 15pt; margin: 0 0 10pt; letter-spacing: 0.5px; }' +
-    '.frame { position: relative; width: 100%; height: 122mm; }' +
-    '.frame-inner { padding: 6mm 8mm; height: 100%; }' +
+    'h2 { text-align: center; font-size: 14pt; margin: 0 0 10pt; letter-spacing: 0.5px; }' +
+    '.sheet { width: 158mm; margin: 0 auto; }' +
+    '.frame { position: relative; width: 100%; height: 112mm; }' +
+    '.frame-inner { padding: 5mm 7mm; height: 100%; }' +
     '.edge { position: absolute; }' +
     '.edge-t { top: 0; left: 0; right: 0; height: 0; border-top: 1.5pt solid #000; }' +
     '.edge-b { bottom: 0; left: 0; right: 0; height: 0; border-top: 1.5pt solid #000; }' +
@@ -1038,10 +1039,11 @@
   function buildPrintDocument() {
     return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">' +
       '<title>Recibos de Aluguel</title><style>' + PRINT_CSS + '</style></head><body>' +
+      '<div class="sheet">' +
       framedReceiptHTML(receipts[0]) +
       '<div class="cut"><span>cortar</span></div>' +
       framedReceiptHTML(receipts[1]) +
-      '</body></html>';
+      '</div></body></html>';
   }
 
   function printSheet() {
