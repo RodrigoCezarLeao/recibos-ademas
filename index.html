@@ -1096,35 +1096,35 @@
   }
 
   var PRINT_CSS = '' +
-    '@page { size: A4 portrait; margin: 28mm 18mm 16mm 18mm; }' +
+    '@page { size: A4 portrait; margin: 14mm 12mm 10mm 12mm; }' +
     '* { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }' +
     'html, body { margin: 0; padding: 0; background: #fff; color: #000; }' +
-    'body { font-family: Arial, Helvetica, sans-serif; font-size: 11pt; padding-top: 12mm; }' +
-    'h2 { text-align: center; font-size: 14pt; margin: 0 0 8pt; letter-spacing: 0.5px; }' +
-    '.sheet { width: 158mm; margin: 0 auto; }' +
+    'body { font-family: Arial, Helvetica, sans-serif; font-size: 9.6pt; }' +
+    'h2 { text-align: center; font-size: 12pt; margin: 0 0 6pt; letter-spacing: 0.5px; }' +
+    '.sheet { width: 172mm; margin: 0 auto; }' +
     '.frame { position: relative; width: 100%; page-break-inside: avoid; }' +
-    '.frame-inner { padding: 5mm 7mm 7mm; }' +
+    '.frame-inner { padding: 4mm 6mm 5mm; }' +
     '.edge { position: absolute; }' +
     '.edge-t { top: 0; left: 0; right: 0; height: 0; border-top: 1.5pt solid #000; }' +
     '.edge-b { bottom: 0; left: 0; right: 0; height: 0; border-top: 1.5pt solid #000; }' +
     '.edge-l { top: 0; bottom: 0; left: 0; width: 0; border-left: 1.5pt solid #000; }' +
     '.edge-r { top: 0; bottom: 0; right: 0; width: 0; border-left: 1.5pt solid #000; }' +
-    'table.items { width: 100%; border-collapse: collapse; margin-bottom: 6pt; }' +
-    'table.items td { padding: 2pt 4pt; }' +
+    'table.items { width: 100%; border-collapse: collapse; margin-bottom: 5pt; }' +
+    'table.items td { padding: 1.5pt 4pt; }' +
     'table.items td.label { width: 55%; }' +
     'table.items td.value { text-align: right; }' +
-    'table.items tr.total td { border-top: 1.5pt solid #000; font-weight: 700; padding-top: 5pt; }' +
-    '.info-row { display: table; width: 100%; margin-bottom: 4pt; }' +
+    'table.items tr.total td { border-top: 1.5pt solid #000; font-weight: 700; padding-top: 4pt; }' +
+    '.info-row { display: table; width: 100%; margin-bottom: 3pt; }' +
     '.info-label { display: table-cell; width: 190px; color: #000; }' +
     '.info-value { display: table-cell; border-bottom: 0.75pt solid #000; padding-bottom: 1pt; }' +
     '.extenso { text-transform: uppercase; font-weight: 700; }' +
-    '.address-box { border: 1pt solid #000; padding: 4pt 8pt; margin: 8pt 0 6pt; font-weight: 700; }' +
-    '.period-row { margin-bottom: 4pt; }' +
-    '.period-box { display: inline-block; border: 0.75pt solid #000; padding: 2pt 8pt; margin: 0 4pt; }' +
-    '.pix-box { border: 0.75pt dashed #000; padding: 6pt 8pt; margin: 0 0 8pt; font-size: 10pt; }' +
-    '.signature { margin-top: 14pt; text-align: center; }' +
+    '.address-box { border: 1pt solid #000; padding: 3pt 7pt; margin: 6pt 0 5pt; font-weight: 700; }' +
+    '.period-row { margin-bottom: 3pt; }' +
+    '.period-box { display: inline-block; border: 0.75pt solid #000; padding: 1.5pt 7pt; margin: 0 4pt; }' +
+    '.pix-box { border: 0.75pt dashed #000; padding: 5pt 7pt; margin: 0 0 6pt; font-size: 9pt; }' +
+    '.signature { margin-top: 10pt; text-align: center; }' +
     '.signature .line { border-top: 1pt solid #000; width: 180pt; margin: 0 auto 4pt; }' +
-    '.cut { display: flex; align-items: center; gap: 8pt; margin: 4mm 0; font-size: 8pt; letter-spacing: 0.18em; text-transform: uppercase; color: #333; }' +
+    '.cut { display: flex; align-items: center; gap: 8pt; margin: 3mm 0; font-size: 8pt; letter-spacing: 0.18em; text-transform: uppercase; color: #333; }' +
     '.cut::before, .cut::after { content: ""; flex: 1; border-top: 0.75pt dashed #333; }' +
     '.cut span { padding: 0 4pt; }';
 
