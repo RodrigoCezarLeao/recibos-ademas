@@ -30,11 +30,9 @@
   }
   .page-header {
     flex-shrink: 0;
-    max-width: 1300px;
     width: 100%;
-    margin: 0 auto 8px;
+    margin: 0 0 8px;
   }
-  h1 { font-size: 16px; margin: 0 0 8px; }
 
   .tabs {
     display: flex;
@@ -99,7 +97,7 @@
     border-radius: 8px;
     padding: 7px 10px;
     margin-bottom: 10px;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
   }
   .form-editing-banner .dot {
@@ -114,9 +112,8 @@
     display: grid;
     grid-template-columns: 45fr 55fr;
     gap: 12px;
-    max-width: 1300px;
     width: 100%;
-    margin: 0 auto;
+    margin: 0;
     align-items: stretch;
     flex: 1;
     min-height: 0;
@@ -135,14 +132,14 @@
     margin: 0 0 8px;
     padding: 6px 10px 8px;
   }
-  legend { font-weight: 600; font-size: 12px; color: var(--muted); padding: 0 4px; }
-  label { display: block; font-size: 12px; margin: 4px 0 2px; color: var(--muted); }
+  legend { font-weight: 600; font-size: 14px; color: var(--muted); padding: 0 4px; }
+  label { display: block; font-size: 14px; margin: 5px 0 3px; color: var(--muted); }
   input[type=text], input[type=number], input[type=date], select {
     width: 100%;
     padding: 5px 8px;
     border: 1px solid var(--border);
     border-radius: 6px;
-    font-size: 13px;
+    font-size: 15px;
     background: #fff;
     color: var(--text);
   }
@@ -152,17 +149,18 @@
   .preset-option {
     display: flex; align-items: center; gap: 6px;
     padding: 4px 6px; border: 1px solid var(--border); border-radius: 6px;
-    cursor: pointer; font-size: 12px;
+    cursor: pointer; font-size: 14px;
   }
   .preset-option:hover { border-color: var(--accent); }
   .preset-option input { width: auto; }
+  .preset-save-field { margin-top: 6px; }
   .preset-actions { display: flex; gap: 6px; margin-top: 6px; }
   button {
     cursor: pointer;
     border: none;
     border-radius: 6px;
     padding: 6px 10px;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 500;
   }
   .btn-primary { background: var(--accent); color: #fff; }
@@ -172,7 +170,7 @@
   .btn-danger { background: #fde8e8; color: #b91c1c; }
   .btn-danger:hover { background: #fbd3d3; }
   .generate-bar { margin-top: 4px; }
-  .generate-bar button { width: 100%; padding: 10px; font-size: 14px; }
+  .generate-bar button { width: 100%; padding: 10px; font-size: 15px; }
 
   /* Preview: two receipts on one A4 sheet */
   #receiptPreview {
@@ -326,7 +324,6 @@
 <body>
 
 <div class="page-header">
-  <h1>Gerador de Recibos de Aluguel</h1>
   <div class="tabs" id="receiptTabs" role="tablist">
     <button type="button" class="tab active" data-index="0" role="tab" aria-selected="true">
       <span class="tab-title">Recibo 1 <span class="tab-pill">editando</span></span>
@@ -359,6 +356,10 @@
       <fieldset style="flex:1;margin-bottom:0;">
         <legend>Inquilino (nome salvo)</legend>
         <div class="presets" id="tenantPresets"></div>
+        <div class="preset-save-field">
+          <label for="newTenantName">Novo inquilino</label>
+          <input type="text" id="newTenantName" placeholder="Digite o nome para salvar">
+        </div>
         <div class="preset-actions">
           <button type="button" class="btn-secondary" id="saveTenant">Salvar</button>
           <button type="button" class="btn-danger" id="deleteTenant">Remover</button>
@@ -489,8 +490,12 @@
   ];
 
   var DEFAULT_TENANTS = [
-    { id: "gloria", label: "Gloria Pereira da Silva Silveira", propertyId: "irma-filomena" },
-    { id: "mauricio", label: "Mauricio Guilherme Reis dos Santos", propertyId: "avenida-uniao" }
+    { id: "casa-31-maria-gorete", label: "Maria Gorete Da Silva", propertyNumber: "31", propertyId: "irma-filomena" },
+    { id: "casa-2-gloria-pereira", label: "Gloria Pereira da Silva Pereira", propertyNumber: "2", propertyId: "irma-filomena" },
+    { id: "casa-3-regina-pereira", label: "Regina Pereira de Lima Oliveira", propertyNumber: "3", propertyId: "irma-filomena" },
+    { id: "casa-4-fabiana-regina", label: "Fabiana Regina Penha da Silva Santos", propertyNumber: "4", propertyId: "irma-filomena" },
+    { id: "casa-5-tatiane-gomes", label: "Tatiane Gomes do Nascimento", propertyNumber: "5", propertyId: "irma-filomena" },
+    { id: "casa-6-tatiane-santos", label: "Tatiane Dos Santos Leal", propertyNumber: "6", propertyId: "irma-filomena" }
   ];
 
   function loadList(key, defaults) {
@@ -509,8 +514,64 @@
     localStorage.setItem(key, JSON.stringify(list));
   }
 
+  function sameText(a, b) {
+    return (a || "").trim().toLowerCase() === (b || "").trim().toLowerCase();
+  }
+
+  function tenantDisplayName(tenant) {
+    var name = tenant.label || "";
+    return tenant.propertyNumber ? name + " (Casa " + tenant.propertyNumber + ")" : name;
+  }
+
+  function syncDefaultTenants() {
+    var changed = false;
+    var legacyDefaults = [
+      { id: "gloria", label: "Gloria Pereira da Silva Silveira" },
+      { id: "mauricio", label: "Mauricio Guilherme Reis dos Santos" }
+    ];
+
+    legacyDefaults.forEach(function (legacy) {
+      var before = tenants.length;
+      tenants = tenants.filter(function (tenant) {
+        return !(tenant.id === legacy.id && sameText(tenant.label, legacy.label));
+      });
+      if (tenants.length !== before) changed = true;
+    });
+
+    DEFAULT_TENANTS.forEach(function (defaultTenant) {
+      var existing = tenants.find(function (tenant) {
+        return tenant.id === defaultTenant.id || sameText(tenant.label, defaultTenant.label);
+      });
+      if (existing) {
+        if (
+          existing.id !== defaultTenant.id ||
+          existing.label !== defaultTenant.label ||
+          existing.propertyNumber !== defaultTenant.propertyNumber ||
+          existing.propertyId !== defaultTenant.propertyId
+        ) {
+          existing.id = defaultTenant.id;
+          existing.label = defaultTenant.label;
+          existing.propertyNumber = defaultTenant.propertyNumber;
+          existing.propertyId = defaultTenant.propertyId;
+          changed = true;
+        }
+        return;
+      }
+      tenants.push({
+        id: defaultTenant.id,
+        label: defaultTenant.label,
+        propertyNumber: defaultTenant.propertyNumber,
+        propertyId: defaultTenant.propertyId
+      });
+      changed = true;
+    });
+
+    if (changed) saveList(STORAGE_TENANTS, tenants);
+  }
+
   var properties = loadList(STORAGE_PROPERTIES, DEFAULT_PROPERTIES);
   var tenants = loadList(STORAGE_TENANTS, DEFAULT_TENANTS);
+  syncDefaultTenants();
 
   function emptyReceipt() {
     return {
@@ -534,10 +595,6 @@
 
   function receiptFromDefaults(tenant, property) {
     var data = emptyReceipt();
-    if (tenant) {
-      data.tenantName = tenant.label || "";
-      data.selectedTenantId = tenant.id || null;
-    }
     if (property) {
       data.selectedPropertyId = property.id || null;
       data.address = property.address;
@@ -546,6 +603,12 @@
       data.valLuz = property.luz;
       data.valAgua = property.agua;
       data.valIptu = property.iptu;
+    }
+    if (tenant) {
+      data.tenantName = tenant.label || "";
+      data.selectedTenantId = tenant.id || null;
+      if (tenant.propertyNumber) data.propertyNumber = tenant.propertyNumber;
+      if (tenant.propertyId) data.selectedPropertyId = tenant.propertyId;
     }
     return data;
   }
@@ -767,7 +830,7 @@
         applyTenant(t);
       });
       var span = document.createElement("span");
-      span.textContent = t.label;
+      span.textContent = tenantDisplayName(t);
       wrap.appendChild(radio);
       wrap.appendChild(span);
       container.appendChild(wrap);
@@ -785,7 +848,21 @@
   }
 
   function applyTenant(t) {
+    if (t.propertyId) {
+      var property = properties.find(function (p) { return p.id === t.propertyId; });
+      if (property) {
+        receipts[activeIndex].selectedPropertyId = property.id;
+        $("address").value = property.address;
+        $("propertyNumber").value = property.propertyNumber;
+        $("valAluguel").value = property.aluguel;
+        $("valLuz").value = property.luz;
+        $("valAgua").value = property.agua;
+        $("valIptu").value = property.iptu;
+        renderPropertyPresets();
+      }
+    }
     $("tenantName").value = t.label;
+    if (t.propertyNumber) $("propertyNumber").value = t.propertyNumber;
     onFormChange();
   }
 
@@ -865,17 +942,31 @@
   });
 
   $("saveTenant").addEventListener("click", function () {
-    var name = $("tenantName").value.trim();
+    var name = $("newTenantName").value.trim() || $("tenantName").value.trim();
     if (!name) { alert("Preencha o nome antes de salvar."); return; }
+    var existing = tenants.find(function (t) {
+      return (t.label || "").trim().toLowerCase() === name.toLowerCase();
+    });
+    if (existing) {
+      $("newTenantName").value = "";
+      receipts[activeIndex].selectedTenantId = existing.id;
+      applyTenant(existing);
+      renderTenantPresets();
+      return;
+    }
     var id = slugify(name);
     tenants.push({
       id: id,
       label: name,
+      propertyNumber: $("propertyNumber").value.trim(),
       propertyId: receipts[activeIndex].selectedPropertyId
     });
     saveList(STORAGE_TENANTS, tenants);
     receipts[activeIndex].selectedTenantId = id;
+    $("tenantName").value = name;
+    $("newTenantName").value = "";
     renderTenantPresets();
+    onFormChange();
   });
 
   $("deleteTenant").addEventListener("click", function () {
