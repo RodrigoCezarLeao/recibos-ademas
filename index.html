@@ -231,7 +231,17 @@
   .receipt table.items { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
   .receipt table.items td { padding: 3px 4px; }
   .receipt table.items td.label { width: 55%; }
-  .receipt table.items td.value { text-align: right; font-variant-numeric: tabular-nums; }
+  .receipt table.items td.currency {
+    width: 2.5ch;
+    padding-right: 0;
+    white-space: nowrap;
+  }
+  .receipt table.items td.amount {
+    padding-left: 4px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
   .receipt table.items tr.total td { border-top: 1.5px solid #111; font-weight: 700; padding-top: 6px; }
   .receipt .info-row { display: flex; margin-bottom: 5px; }
   .receipt .info-label { width: 190px; flex-shrink: 0; color: #333; }
@@ -639,6 +649,12 @@
     return "R$ " + (n || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
+  function receiptMoneyCells(n) {
+    return '<td class="currency">R$</td><td class="amount">' +
+      (n || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) +
+      '</td>';
+  }
+
   function fmtDateBR(isoStr) {
     if (!isoStr) return "";
     var parts = isoStr.split("-");
@@ -1035,12 +1051,12 @@
       '<h2>RECIBO DE ALUGUEL</h2>' +
       d.pixHTML +
       '<table class="items">' +
-        '<tr><td class="label">Aluguel</td><td class="value">' + fmtMoney(d.aluguel) + '</td></tr>' +
-        '<tr><td class="label">Luz sv.</td><td class="value">' + fmtMoney(d.luz) + '</td></tr>' +
-        '<tr><td class="label">Água</td><td class="value">' + fmtMoney(d.agua) + '</td></tr>' +
-        '<tr><td class="label">Iptu</td><td class="value">' + fmtMoney(d.iptu) + '</td></tr>' +
-        '<tr><td class="label">Multa</td><td class="value">' + (d.multa > 0 ? fmtMoney(d.multa) : "") + '</td></tr>' +
-        '<tr class="total"><td class="label">Total</td><td class="value">' + fmtMoney(d.total) + '</td></tr>' +
+        '<tr><td class="label">Aluguel</td>' + receiptMoneyCells(d.aluguel) + '</tr>' +
+        '<tr><td class="label">Luz sv.</td>' + receiptMoneyCells(d.luz) + '</tr>' +
+        '<tr><td class="label">Água</td>' + receiptMoneyCells(d.agua) + '</tr>' +
+        '<tr><td class="label">Iptu</td>' + receiptMoneyCells(d.iptu) + '</tr>' +
+        '<tr><td class="label">Multa</td>' + (d.multa > 0 ? receiptMoneyCells(d.multa) : '<td class="currency"></td><td class="amount"></td>') + '</tr>' +
+        '<tr class="total"><td class="label">Total</td>' + receiptMoneyCells(d.total) + '</tr>' +
       '</table>' +
       '<div class="info-row"><div class="info-label">Recebi de</div><div class="info-value">' + d.tenantName + '</div></div>' +
       '<div class="info-row"><div class="info-label">A quantia de</div><div class="info-value extenso">' + d.extenso + '</div></div>' +
@@ -1112,7 +1128,8 @@
     'table.items { width: 100%; border-collapse: collapse; margin-bottom: 5pt; }' +
     'table.items td { padding: 1.5pt 4pt; }' +
     'table.items td.label { width: 55%; }' +
-    'table.items td.value { text-align: right; }' +
+    'table.items td.currency { width: 2.5ch; padding-right: 0; white-space: nowrap; }' +
+    'table.items td.amount { padding-left: 3pt; text-align: right; white-space: nowrap; }' +
     'table.items tr.total td { border-top: 1.5pt solid #000; font-weight: 700; padding-top: 4pt; }' +
     '.info-row { display: table; width: 100%; margin-bottom: 3pt; }' +
     '.info-label { display: table-cell; width: 190px; color: #000; }' +
