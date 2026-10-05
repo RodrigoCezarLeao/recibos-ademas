@@ -153,8 +153,6 @@
   }
   .preset-option:hover { border-color: var(--accent); }
   .preset-option input { width: auto; }
-  .preset-save-field { margin-top: 6px; }
-  .preset-actions { display: flex; gap: 6px; margin-top: 6px; }
   button {
     cursor: pointer;
     border: none;
@@ -165,10 +163,6 @@
   }
   .btn-primary { background: var(--accent); color: #fff; }
   .btn-primary:hover { background: var(--accent-dark); }
-  .btn-secondary { background: #eef0f3; color: var(--text); }
-  .btn-secondary:hover { background: #e2e5ea; }
-  .btn-danger { background: #fde8e8; color: #b91c1c; }
-  .btn-danger:hover { background: #fbd3d3; }
   .generate-bar { margin-top: 4px; }
   .generate-bar button { width: 100%; padding: 10px; font-size: 15px; }
 
@@ -356,29 +350,15 @@
       <span class="dot"></span>
       <span id="formEditingLabel">Editando Recibo 1</span>
     </div>
-    <div class="row" style="margin-bottom:8px;">
-      <fieldset style="flex:1;margin-bottom:0;">
-        <legend>Imóvel (endereço salvo)</legend>
-        <div class="presets" id="propertyPresets"></div>
-        <div class="preset-actions">
-          <button type="button" class="btn-secondary" id="saveProperty">Salvar</button>
-          <button type="button" class="btn-danger" id="deleteProperty">Remover</button>
-        </div>
-      </fieldset>
+    <fieldset>
+      <legend>Imóvel</legend>
+      <div class="presets" id="propertyPresets"></div>
+    </fieldset>
 
-      <fieldset style="flex:1;margin-bottom:0;">
-        <legend>Inquilino (nome salvo)</legend>
-        <div class="presets" id="tenantPresets"></div>
-        <div class="preset-save-field">
-          <label for="newTenantName">Novo inquilino</label>
-          <input type="text" id="newTenantName" placeholder="Digite o nome para salvar">
-        </div>
-        <div class="preset-actions">
-          <button type="button" class="btn-secondary" id="saveTenant">Salvar</button>
-          <button type="button" class="btn-danger" id="deleteTenant">Remover</button>
-        </div>
-      </fieldset>
-    </div>
+    <fieldset>
+      <legend>Inquilino</legend>
+      <div class="presets" id="tenantPresets"></div>
+    </fieldset>
 
     <fieldset>
       <legend>Dados do recibo</legend>
@@ -469,7 +449,6 @@
 (function () {
   "use strict";
 
-  var STORAGE_PROPERTIES = "recibos_properties_v1";
   var STORAGE_TENANTS = "recibos_tenants_v1";
   var STORAGE_DRAFTS = "recibos_drafts_v1";
 
@@ -503,12 +482,13 @@
   ];
 
   var DEFAULT_TENANTS = [
-    { id: "casa-31-maria-gorete", label: "Maria Gorete Da Silva", propertyNumber: "31", propertyId: "irma-filomena" },
+    { id: "casa-1-victoria-rafaely", label: "Victoria Rafaely dos Santos Silva", propertyNumber: "1", propertyId: "irma-filomena" },
     { id: "casa-2-gloria-pereira", label: "Gloria Pereira da Silva Pereira", propertyNumber: "2", propertyId: "irma-filomena" },
     { id: "casa-3-regina-pereira", label: "Regina Pereira de Lima Oliveira", propertyNumber: "3", propertyId: "irma-filomena" },
     { id: "casa-4-fabiana-regina", label: "Fabiana Regina Penha da Silva Santos", propertyNumber: "4", propertyId: "irma-filomena" },
     { id: "casa-5-tatiane-gomes", label: "Tatiane Gomes do Nascimento", propertyNumber: "5", propertyId: "irma-filomena" },
-    { id: "casa-6-tatiane-santos", label: "Tatiane Dos Santos Leal", propertyNumber: "6", propertyId: "irma-filomena" }
+    { id: "casa-6-tatiane-santos", label: "Tatiane Dos Santos Leal", propertyNumber: "6", propertyId: "irma-filomena" },
+    { id: "casa-31-maria-gorete", label: "Maria Gorete Da Silva", propertyNumber: "31", propertyId: "irma-filomena" }
   ];
 
   function loadList(key, defaults) {
@@ -534,6 +514,19 @@
   function tenantDisplayName(tenant) {
     var name = tenant.label || "";
     return tenant.propertyNumber ? name + " (Casa " + tenant.propertyNumber + ")" : name;
+  }
+
+  function houseSortKey(tenant) {
+    var n = parseInt(tenant && tenant.propertyNumber, 10);
+    return isNaN(n) ? Number.POSITIVE_INFINITY : n;
+  }
+
+  function sortTenantsByHouse() {
+    tenants.sort(function (a, b) {
+      var diff = houseSortKey(a) - houseSortKey(b);
+      if (diff !== 0) return diff;
+      return (a.label || "").localeCompare(b.label || "", "pt-BR");
+    });
   }
 
   function syncDefaultTenants() {
@@ -579,10 +572,24 @@
       changed = true;
     });
 
+    var beforePrune = tenants.length;
+    tenants = tenants.filter(function (tenant) {
+      return DEFAULT_TENANTS.some(function (defaultTenant) {
+        return tenant.id === defaultTenant.id || sameText(tenant.label, defaultTenant.label);
+      });
+    });
+    if (tenants.length !== beforePrune) changed = true;
+
+    var orderBefore = tenants.map(function (tenant) { return tenant.id; }).join("|");
+    sortTenantsByHouse();
+    if (tenants.map(function (tenant) { return tenant.id; }).join("|") !== orderBefore) {
+      changed = true;
+    }
+
     if (changed) saveList(STORAGE_TENANTS, tenants);
   }
 
-  var properties = loadList(STORAGE_PROPERTIES, DEFAULT_PROPERTIES);
+  var properties = DEFAULT_PROPERTIES.slice();
   var tenants = loadList(STORAGE_TENANTS, DEFAULT_TENANTS);
   syncDefaultTenants();
 
@@ -920,84 +927,6 @@
     $(id).addEventListener("input", onFormChange);
   });
   $("showPix").addEventListener("change", onFormChange);
-
-  // ---- Save / delete presets ----
-  function slugify(str) {
-    return str.toLowerCase()
-      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "") + "-" + Date.now();
-  }
-
-  $("saveProperty").addEventListener("click", function () {
-    var address = $("address").value.trim();
-    if (!address) { alert("Preencha o endereço antes de salvar."); return; }
-    var id = slugify(address);
-    var p = {
-      id: id,
-      label: address,
-      address: address,
-      propertyNumber: $("propertyNumber").value.trim(),
-      aluguel: parseFloat($("valAluguel").value) || 0,
-      luz: parseFloat($("valLuz").value) || 0,
-      agua: parseFloat($("valAgua").value) || 0,
-      iptu: parseFloat($("valIptu").value) || 0
-    };
-    properties.push(p);
-    saveList(STORAGE_PROPERTIES, properties);
-    receipts[activeIndex].selectedPropertyId = id;
-    renderPropertyPresets();
-  });
-
-  $("deleteProperty").addEventListener("click", function () {
-    var selectedId = receipts[activeIndex].selectedPropertyId;
-    if (!selectedId) return;
-    if (!confirm("Remover o imóvel selecionado da lista salva?")) return;
-    properties = properties.filter(function (p) { return p.id !== selectedId; });
-    saveList(STORAGE_PROPERTIES, properties);
-    receipts[activeIndex].selectedPropertyId = properties.length ? properties[0].id : null;
-    renderPropertyPresets();
-    if (receipts[activeIndex].selectedPropertyId) applyProperty(properties[0]);
-  });
-
-  $("saveTenant").addEventListener("click", function () {
-    var name = $("newTenantName").value.trim() || $("tenantName").value.trim();
-    if (!name) { alert("Preencha o nome antes de salvar."); return; }
-    var existing = tenants.find(function (t) {
-      return (t.label || "").trim().toLowerCase() === name.toLowerCase();
-    });
-    if (existing) {
-      $("newTenantName").value = "";
-      receipts[activeIndex].selectedTenantId = existing.id;
-      applyTenant(existing);
-      renderTenantPresets();
-      return;
-    }
-    var id = slugify(name);
-    tenants.push({
-      id: id,
-      label: name,
-      propertyNumber: $("propertyNumber").value.trim(),
-      propertyId: receipts[activeIndex].selectedPropertyId
-    });
-    saveList(STORAGE_TENANTS, tenants);
-    receipts[activeIndex].selectedTenantId = id;
-    $("tenantName").value = name;
-    $("newTenantName").value = "";
-    renderTenantPresets();
-    onFormChange();
-  });
-
-  $("deleteTenant").addEventListener("click", function () {
-    var selectedId = receipts[activeIndex].selectedTenantId;
-    if (!selectedId) return;
-    if (!confirm("Remover o nome selecionado da lista salva?")) return;
-    tenants = tenants.filter(function (t) { return t.id !== selectedId; });
-    saveList(STORAGE_TENANTS, tenants);
-    receipts[activeIndex].selectedTenantId = tenants.length ? tenants[0].id : null;
-    renderTenantPresets();
-    if (receipts[activeIndex].selectedTenantId) applyTenant(tenants[0]);
-  });
 
   // ---- Generate receipt ----
   function buildReceiptHTML(data, index) {
