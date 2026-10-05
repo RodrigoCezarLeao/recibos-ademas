@@ -87,27 +87,6 @@
   }
   .tab.active .tab-sub { color: rgba(255,255,255,0.85); }
 
-  .form-editing-banner {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: #eff6ff;
-    border: 1px solid #93c5fd;
-    color: #1e40af;
-    border-radius: 8px;
-    padding: 7px 10px;
-    margin-bottom: 10px;
-    font-size: 14px;
-    font-weight: 600;
-  }
-  .form-editing-banner .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--accent);
-    flex-shrink: 0;
-  }
-
   .layout {
     display: grid;
     grid-template-columns: 45fr 55fr;
@@ -163,6 +142,14 @@
   }
   .btn-primary { background: var(--accent); color: #fff; }
   .btn-primary:hover { background: var(--accent-dark); }
+  .btn-secondary { background: #eef0f3; color: var(--text); }
+  .btn-secondary:hover { background: #e2e5ea; }
+  .tenant-link {
+    margin: 8px 0 0;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .preset-actions { display: flex; gap: 6px; margin-top: 6px; }
   .generate-bar { margin-top: 4px; }
   .generate-bar button { width: 100%; padding: 10px; font-size: 15px; }
 
@@ -346,10 +333,6 @@
 <div class="layout">
   <!-- FORM -->
   <div class="card">
-    <div class="form-editing-banner" id="formEditingBanner">
-      <span class="dot"></span>
-      <span id="formEditingLabel">Editando Recibo 1</span>
-    </div>
     <fieldset>
       <legend>Imóvel</legend>
       <div class="presets" id="propertyPresets"></div>
@@ -358,6 +341,20 @@
     <fieldset>
       <legend>Inquilino</legend>
       <div class="presets" id="tenantPresets"></div>
+      <div class="row" style="margin-top:8px;">
+        <div style="flex:1.6;">
+          <label for="newTenantName">Novo inquilino</label>
+          <input type="text" id="newTenantName" placeholder="Nome">
+        </div>
+        <div style="flex:0.6;">
+          <label for="newTenantHouse">Casa n°</label>
+          <input type="text" id="newTenantHouse" inputmode="numeric" placeholder="1">
+        </div>
+      </div>
+      <p class="tenant-link" id="tenantPropertyLink"></p>
+      <div class="preset-actions">
+        <button type="button" class="btn-secondary" id="saveTenant">Salvar inquilino</button>
+      </div>
     </fieldset>
 
     <fieldset>
@@ -482,13 +479,13 @@
   ];
 
   var DEFAULT_TENANTS = [
+    { id: "casa-31-maria-gorete", label: "Maria Gorete Da Silva", propertyNumber: "31", propertyId: "irma-filomena" },
     { id: "casa-1-victoria-rafaely", label: "Victoria Rafaely dos Santos Silva", propertyNumber: "1", propertyId: "irma-filomena" },
     { id: "casa-2-gloria-pereira", label: "Gloria Pereira da Silva Pereira", propertyNumber: "2", propertyId: "irma-filomena" },
     { id: "casa-3-regina-pereira", label: "Regina Pereira de Lima Oliveira", propertyNumber: "3", propertyId: "irma-filomena" },
     { id: "casa-4-fabiana-regina", label: "Fabiana Regina Penha da Silva Santos", propertyNumber: "4", propertyId: "irma-filomena" },
     { id: "casa-5-tatiane-gomes", label: "Tatiane Gomes do Nascimento", propertyNumber: "5", propertyId: "irma-filomena" },
-    { id: "casa-6-tatiane-santos", label: "Tatiane Dos Santos Leal", propertyNumber: "6", propertyId: "irma-filomena" },
-    { id: "casa-31-maria-gorete", label: "Maria Gorete Da Silva", propertyNumber: "31", propertyId: "irma-filomena" }
+    { id: "casa-6-tatiane-santos", label: "Tatiane Dos Santos Leal", propertyNumber: "6", propertyId: "irma-filomena" }
   ];
 
   function loadList(key, defaults) {
@@ -518,6 +515,7 @@
 
   function houseSortKey(tenant) {
     var n = parseInt(tenant && tenant.propertyNumber, 10);
+    if (n === 31) return -1;
     return isNaN(n) ? Number.POSITIVE_INFINITY : n;
   }
 
@@ -549,15 +547,16 @@
         return tenant.id === defaultTenant.id || sameText(tenant.label, defaultTenant.label);
       });
       if (existing) {
-        if (
-          existing.id !== defaultTenant.id ||
-          existing.label !== defaultTenant.label ||
-          existing.propertyNumber !== defaultTenant.propertyNumber ||
-          existing.propertyId !== defaultTenant.propertyId
-        ) {
+        if (existing.id !== defaultTenant.id || existing.label !== defaultTenant.label) {
           existing.id = defaultTenant.id;
           existing.label = defaultTenant.label;
+          changed = true;
+        }
+        if (!existing.propertyNumber) {
           existing.propertyNumber = defaultTenant.propertyNumber;
+          changed = true;
+        }
+        if (!existing.propertyId) {
           existing.propertyId = defaultTenant.propertyId;
           changed = true;
         }
@@ -571,14 +570,6 @@
       });
       changed = true;
     });
-
-    var beforePrune = tenants.length;
-    tenants = tenants.filter(function (tenant) {
-      return DEFAULT_TENANTS.some(function (defaultTenant) {
-        return tenant.id === defaultTenant.id || sameText(tenant.label, defaultTenant.label);
-      });
-    });
-    if (tenants.length !== beforePrune) changed = true;
 
     var orderBefore = tenants.map(function (tenant) { return tenant.id; }).join("|");
     sortTenantsByHouse();
@@ -785,10 +776,6 @@
       var name = (receipts[i].tenantName || "").trim();
       $("tabSub" + i).textContent = name || "Sem nome";
     }
-    var activeName = (receipts[activeIndex].tenantName || "").trim();
-    $("formEditingLabel").textContent = activeName
-      ? "Editando Recibo " + (activeIndex + 1) + " — " + activeName
-      : "Editando Recibo " + (activeIndex + 1);
   }
 
   function updateTabUI() {
@@ -837,6 +824,20 @@
       wrap.appendChild(span);
       container.appendChild(wrap);
     });
+    updateTenantPropertyLink();
+  }
+
+  function selectedProperty() {
+    return properties.find(function (p) {
+      return p.id === receipts[activeIndex].selectedPropertyId;
+    }) || null;
+  }
+
+  function updateTenantPropertyLink() {
+    var property = selectedProperty();
+    $("tenantPropertyLink").textContent = property
+      ? "A casa fica vinculada a " + property.label
+      : "Selecione o imóvel acima para vincular a casa.";
   }
 
   function renderTenantPresets() {
@@ -927,6 +928,45 @@
     $(id).addEventListener("input", onFormChange);
   });
   $("showPix").addEventListener("change", onFormChange);
+
+  function slugify(str) {
+    return str.toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "") + "-" + Date.now();
+  }
+
+  $("saveTenant").addEventListener("click", function () {
+    var name = $("newTenantName").value.trim();
+    var house = $("newTenantHouse").value.trim();
+    var property = selectedProperty();
+    if (!name) { alert("Preencha o nome do inquilino."); return; }
+    if (!house) { alert("Preencha o número da casa."); return; }
+    if (!property) { alert("Selecione o imóvel acima."); return; }
+
+    var tenant = tenants.find(function (t) {
+      return sameText(t.label, name);
+    });
+    if (tenant) {
+      tenant.propertyNumber = house;
+      tenant.propertyId = property.id;
+    } else {
+      tenant = {
+        id: slugify(name),
+        label: name,
+        propertyNumber: house,
+        propertyId: property.id
+      };
+      tenants.push(tenant);
+    }
+    sortTenantsByHouse();
+    saveList(STORAGE_TENANTS, tenants);
+    receipts[activeIndex].selectedTenantId = tenant.id;
+    $("newTenantName").value = "";
+    $("newTenantHouse").value = "";
+    applyTenant(tenant);
+    renderTenantPresets();
+  });
 
   // ---- Generate receipt ----
   function buildReceiptHTML(data, index) {
