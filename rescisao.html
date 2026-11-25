@@ -367,9 +367,9 @@
     return {
       locadorNome: "Ademar Sampaio Cezar",
       locadorCpf: "111.511.347-04",
-      locadorRg: "07.903.941-0",
+      locadorRg: "01901947-0",
       locatarioNome: "Fabiana Regina Penha da Silva dos Santos",
-      locatarioCpf: "092.496.481-40",
+      locatarioCpf: "",
       locatarioRg: "33682320",
       selectedPropertyId: "irma-filomena",
       selectedTenantId: "casa-4-fabiana-regina",
@@ -439,6 +439,8 @@
           if (parsed[key] != null) base[key] = parsed[key];
         });
         if (/^norman\b/i.test(base.locadorNome || "")) base.locadorNome = "Ademar Sampaio Cezar";
+        if (base.locadorRg === "07.903.941-0") base.locadorRg = "01901947-0";
+        if (base.locatarioCpf === "092.496.481-40") base.locatarioCpf = "";
       }
     } catch (e) {}
     return base;
