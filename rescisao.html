@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Termo de Rescisão de Locação</title>
+<style>
+  :root {
+    --bg: #f4f5f7;
+    --card: #ffffff;
+    --border: #d9dce1;
+    --text: #1f2430;
+    --muted: #6b7280;
+    --accent: #2563eb;
+    --accent-dark: #1d4ed8;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .page-header { flex-shrink: 0; width: 100%; margin: 0 0 8px; }
+  .home-link {
+    display: inline-block;
+    margin: 0 0 6px;
+    color: var(--muted);
+    font-size: 13px;
+    text-decoration: none;
+  }
+  .home-link:hover { color: var(--accent); }
+  .tool-heading { font-size: 16px; margin: 0; }
+  .layout {
+    display: grid;
+    grid-template-columns: 45fr 55fr;
+    gap: 12px;
+    width: 100%;
+    align-items: stretch;
+    flex: 1;
+    min-height: 0;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    overflow-y: auto;
+    min-height: 0;
+  }
+  fieldset {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin: 0 0 8px;
+    padding: 6px 10px 8px;
+  }
+  legend { font-weight: 600; font-size: 14px; color: var(--muted); padding: 0 4px; }
+  label { display: block; font-size: 14px; margin: 5px 0 3px; color: var(--muted); }
+  input[type=text], input[type=number], input[type=date] {
+    width: 100%;
+    padding: 5px 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 15px;
+    background: #fff;
+    color: var(--text);
+  }
+  input:disabled { background: #f3f4f6; color: #9ca3af; }
+  .row { display: flex; gap: 8px; }
+  .row > div { flex: 1; }
+  .presets { display: flex; flex-direction: row; flex-wrap: wrap; gap: 6px; }
+  .preset-option, .choice {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 6px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text);
+    margin: 0;
+  }
+  .choice { margin-top: 6px; width: fit-content; }
+  .preset-option:hover, .choice:hover { border-color: var(--accent); }
+  .preset-option input, .choice input { width: auto; }
+  button {
+    cursor: pointer;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-dark); }
+  .generate-bar { margin-top: 4px; }
+  .generate-bar button { width: 100%; padding: 10px; font-size: 15px; }
+
+  #termoPreview { display: flex; justify-content: center; }
+  .termo {
+    width: 100%;
+    max-width: 680px;
+    background: #fff;
+    color: #111;
+    border: 1px solid #111;
+    padding: 22px 26px 28px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12.5px;
+    line-height: 1.45;
+  }
+  .termo h2 {
+    text-align: center;
+    font-size: 15px;
+    line-height: 1.3;
+    margin: 0 0 14px;
+    letter-spacing: 0.2px;
+  }
+  .termo p { margin: 0 0 8px; }
+  .termo .clause {
+    font-weight: 700;
+    margin: 12px 0 4px;
+  }
+  .termo .fill {
+    border-bottom: 1px solid #111;
+    padding: 0 4px 1px;
+    font-weight: 600;
+  }
+  .termo .fill.wide { display: block; min-height: 1.25em; margin-top: 2px; }
+  .termo .fill.money { display: inline-block; min-width: 88px; }
+  .termo .fill.date { display: inline-block; min-width: 88px; text-align: center; }
+  .termo .fill.long { display: inline-block; min-width: 180px; }
+  .termo .option { margin: 2px 0; }
+  .termo .values { margin: 4px 0 8px 18px; }
+  .termo .values div { margin: 1px 0; }
+  .termo .closing { margin-top: 12px; }
+  .termo .sign-row {
+    display: flex;
+    gap: 24px;
+    margin-top: 18px;
+  }
+  .termo .sign {
+    flex: 1;
+  }
+  .termo .sign .who { font-weight: 700; margin-bottom: 22px; }
+  .termo .sign .line { border-top: 1px solid #111; padding-top: 3px; }
+
+  @media (max-width: 860px) {
+    body { overflow: auto; height: auto; }
+    .layout { grid-template-columns: 1fr; }
+    .row { flex-wrap: wrap; }
+    .row > div { flex: 1 1 150px; min-width: 0; }
+  }
+
+  @page { size: A4 portrait; margin: 12mm 14mm 10mm; }
+
+  @media print {
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    body { padding: 0; margin: 0; overflow: visible; height: auto; background: #fff; display: block; }
+    .page-header, .layout > .card:first-child { display: none !important; }
+    .layout { display: block; }
+    .layout > .card:last-child { border: none; padding: 0; overflow: visible; }
+    #termoPreview { display: block; }
+    .termo { max-width: none; border: none; padding: 0; font-size: 10pt; line-height: 1.32; }
+    .termo h2 { font-size: 13pt; margin: 0 0 8px; }
+    .termo p { margin: 0 0 4px; }
+    .termo .clause { margin: 7px 0 2px; }
+    .termo .values { margin: 2px 0 4px 18px; }
+    .termo .closing { margin-top: 8px; }
+    .termo .sign-row { margin-top: 10px; }
+    .termo .sign .who { margin-bottom: 28px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <a class="home-link" href="./index.html">Início</a>
+  <h1 class="tool-heading">Termo de rescisão</h1>
+</div>
+
+<div class="layout">
+  <form class="card" id="termoForm">
+    <fieldset>
+      <legend>Locador</legend>
+      <label for="locadorNome">Nome</label>
+      <input type="text" id="locadorNome">
+      <div class="row">
+        <div>
+          <label for="locadorCpf">CPF</label>
+          <input type="text" id="locadorCpf">
+        </div>
+        <div>
+          <label for="locadorRg">RG</label>
+          <input type="text" id="locadorRg">
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Locatário</legend>
+      <div class="presets" id="tenantPresets"></div>
+      <label for="locatarioNome">Nome</label>
+      <input type="text" id="locatarioNome">
+      <div class="row">
+        <div>
+          <label for="locatarioCpf">CPF</label>
+          <input type="text" id="locatarioCpf">
+        </div>
+        <div>
+          <label for="locatarioRg">RG</label>
+          <input type="text" id="locatarioRg">
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Imóvel</legend>
+      <div class="presets" id="propertyPresets"></div>
+      <label for="endereco">Endereço</label>
+      <input type="text" id="endereco">
+      <div class="row">
+        <div style="flex:1.4;">
+          <label for="cidadeImovel">Cidade</label>
+          <input type="text" id="cidadeImovel">
+        </div>
+        <div>
+          <label for="cep">CEP</label>
+          <input type="text" id="cep">
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Encerramento</legend>
+      <div class="row">
+        <div>
+          <label for="dataContrato">Contrato firmado em</label>
+          <input type="date" id="dataContrato">
+        </div>
+        <div>
+          <label for="dataEncerramento">Encerra em</label>
+          <input type="date" id="dataEncerramento">
+        </div>
+        <div>
+          <label for="dataChaves">Entrega das chaves</label>
+          <input type="date" id="dataChaves">
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Valores pendentes</legend>
+      <label class="choice"><input type="radio" name="pendencia" value="nenhuma"> Não existem valores pendentes</label>
+      <label class="choice"><input type="radio" name="pendencia" value="existem"> Existem valores pendentes</label>
+      <div class="row">
+        <div>
+          <label for="valAluguel">Aluguel (R$)</label>
+          <input type="number" step="0.01" id="valAluguel">
+        </div>
+        <div>
+          <label for="valCondominio">Condomínio (R$)</label>
+          <input type="number" step="0.01" id="valCondominio">
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="valIptu">IPTU (R$)</label>
+          <input type="number" step="0.01" id="valIptu">
+        </div>
+        <div>
+          <label for="valOutros">Outros (R$)</label>
+          <input type="number" step="0.01" id="valOutros">
+        </div>
+      </div>
+      <label for="formaPagamento">Forma e prazo de pagamento</label>
+      <input type="text" id="formaPagamento">
+      <label for="totalDisplay">Total</label>
+      <input type="text" id="totalDisplay" readonly style="font-weight:600;background:#f7f8fa;">
+    </fieldset>
+
+    <fieldset>
+      <legend>Multa rescisória</legend>
+      <label class="choice"><input type="radio" name="multa" value="nenhuma"> Não haverá cobrança</label>
+      <label class="choice"><input type="radio" name="multa" value="cobrada"> Será cobrada</label>
+      <label class="choice"><input type="radio" name="multa" value="dispensada"> Dispensada por acordo</label>
+      <label for="valMulta">Valor da multa (R$)</label>
+      <input type="number" step="0.01" id="valMulta">
+    </fieldset>
+
+    <fieldset>
+      <legend>Assinatura</legend>
+      <div class="row">
+        <div>
+          <label for="cidade">Cidade</label>
+          <input type="text" id="cidade">
+        </div>
+        <div>
+          <label for="dataTermo">Data</label>
+          <input type="date" id="dataTermo">
+        </div>
+      </div>
+    </fieldset>
+
+    <div class="generate-bar">
+      <button type="button" class="btn-primary" id="printBtn">Imprimir termo (1 folha A4)</button>
+    </div>
+  </form>
+
+  <div class="card">
+    <div id="termoPreview"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var STORAGE = "rescisao_draft_v1";
+  var STORAGE_TENANTS = "recibos_tenants_v1";
+
+  var FIELD_IDS = [
+    "locadorNome", "locadorCpf", "locadorRg",
+    "locatarioNome", "locatarioCpf", "locatarioRg",
+    "endereco", "cidadeImovel", "cep",
+    "dataContrato", "dataEncerramento", "dataChaves",
+    "valAluguel", "valCondominio", "valIptu", "valOutros", "formaPagamento",
+    "valMulta", "cidade", "dataTermo"
+  ];
+  var PENDING_IDS = ["valAluguel", "valCondominio", "valIptu", "valOutros", "formaPagamento"];
+
+  var PROPERTIES = [
+    {
+      id: "irma-filomena",
+      label: "Rua Irmã Filomena 31 - Mesquita",
+      street: "Rua Irmã Filomena, nº 31",
+      houseMark: "c/",
+      city: "Mesquita - RJ",
+      cep: "26585-010"
+    },
+    {
+      id: "avenida-uniao",
+      label: "Avenida União, n° 297 - Mesquita",
+      street: "Avenida União, nº 297",
+      houseMark: "",
+      city: "Mesquita - RJ",
+      cep: ""
+    }
+  ];
+
+  var DEFAULT_TENANTS = [
+    { id: "casa-31-maria-gorete", label: "Maria Gorete Da Silva", propertyNumber: "31", propertyId: "irma-filomena" },
+    { id: "casa-1-victoria-rafaely", label: "Victoria Rafaely dos Santos Silva", propertyNumber: "1", propertyId: "irma-filomena" },
+    { id: "casa-2-gloria-pereira", label: "Gloria Pereira da Silva Pereira", propertyNumber: "2", propertyId: "irma-filomena" },
+    { id: "casa-3-regina-pereira", label: "Regina Pereira de Lima Oliveira", propertyNumber: "3", propertyId: "irma-filomena" },
+    { id: "casa-4-fabiana-regina", label: "Fabiana Regina Penha da Silva Santos", propertyNumber: "4", propertyId: "irma-filomena" },
+    { id: "casa-5-tatiane-gomes", label: "Tatiane Gomes do Nascimento", propertyNumber: "5", propertyId: "irma-filomena" },
+    { id: "casa-6-tatiane-santos", label: "Tatiane Dos Santos Leal", propertyNumber: "6", propertyId: "irma-filomena" }
+  ];
+
+  function defaultForm() {
+    return {
+      locadorNome: "Norman Sampaio Cezar",
+      locadorCpf: "111.511.347-04",
+      locadorRg: "07.903.941-0",
+      locatarioNome: "Fabiana Regina Penha da Silva dos Santos",
+      locatarioCpf: "092.496.481-40",
+      locatarioRg: "33682320",
+      selectedPropertyId: "irma-filomena",
+      selectedTenantId: "casa-4-fabiana-regina",
+      endereco: "Rua Irmã Filomena, nº 31 c/4",
+      cidadeImovel: "Mesquita - RJ",
+      cep: "26585-010",
+      dataContrato: "2026-01-10",
+      dataEncerramento: "2026-10-15",
+      dataChaves: "2026-10-15",
+      pendencia: "nenhuma",
+      valAluguel: "",
+      valCondominio: "",
+      valIptu: "",
+      valOutros: "",
+      formaPagamento: "",
+      multa: "cobrada",
+      valMulta: "450",
+      cidade: "Mesquita - RJ",
+      dataTermo: "2026-11-14"
+    };
+  }
+
+  function $(id) { return document.getElementById(id); }
+
+  function sameText(a, b) {
+    return (a || "").trim().toLowerCase() === (b || "").trim().toLowerCase();
+  }
+
+  function houseSortKey(tenant) {
+    var n = parseInt(tenant && tenant.propertyNumber, 10);
+    if (n === 31) return -1;
+    return isNaN(n) ? Number.POSITIVE_INFINITY : n;
+  }
+
+  function loadTenants() {
+    var list = [];
+    try {
+      var parsed = JSON.parse(localStorage.getItem(STORAGE_TENANTS) || "null");
+      if (Array.isArray(parsed)) list = parsed.slice();
+    } catch (e) {}
+    if (!list.length) {
+      list = DEFAULT_TENANTS.map(function (t) {
+        return { id: t.id, label: t.label, propertyNumber: t.propertyNumber, propertyId: t.propertyId };
+      });
+    } else {
+      DEFAULT_TENANTS.forEach(function (d) {
+        var found = list.some(function (t) {
+          return t.id === d.id || sameText(t.label, d.label);
+        });
+        if (!found) list.push({ id: d.id, label: d.label, propertyNumber: d.propertyNumber, propertyId: d.propertyId });
+      });
+    }
+    list.sort(function (a, b) {
+      var diff = houseSortKey(a) - houseSortKey(b);
+      if (diff !== 0) return diff;
+      return (a.label || "").localeCompare(b.label || "", "pt-BR");
+    });
+    return list;
+  }
+
+  function loadForm() {
+    var base = defaultForm();
+    try {
+      var parsed = JSON.parse(localStorage.getItem(STORAGE) || "null");
+      if (parsed && typeof parsed === "object") {
+        Object.keys(base).forEach(function (key) {
+          if (parsed[key] != null) base[key] = parsed[key];
+        });
+      }
+    } catch (e) {}
+    return base;
+  }
+
+  var tenants = loadTenants();
+  var form = loadForm();
+
+  function esc(value) {
+    return String(value == null ? "" : value).replace(/[&<>"]/g, function (ch) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;" }[ch];
+    });
+  }
+
+  function fmtDateBR(iso) {
+    if (!iso) return "";
+    var parts = String(iso).split("-");
+    if (parts.length !== 3) return String(iso);
+    return parts[2] + "/" + parts[1] + "/" + parts[0];
+  }
+
+  function fmtAmount(raw) {
+    if (raw === "" || raw == null) return "";
+    var n = parseFloat(raw);
+    if (isNaN(n)) return "";
+    return n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function pendingTotal(data) {
+    return ["valAluguel", "valCondominio", "valIptu", "valOutros"].reduce(function (sum, id) {
+      return sum + (parseFloat(data[id]) || 0);
+    }, 0);
+  }
+
+  function checkedValue(name) {
+    var el = document.querySelector('input[name="' + name + '"]:checked');
+    return el ? el.value : "";
+  }
+
+  function collect() {
+    var data = defaultForm();
+    FIELD_IDS.forEach(function (id) {
+      data[id] = $(id).value;
+    });
+    data.pendencia = checkedValue("pendencia") || "nenhuma";
+    data.multa = checkedValue("multa") || "nenhuma";
+    data.selectedPropertyId = checkedValue("propertyPreset") || form.selectedPropertyId;
+    data.selectedTenantId = checkedValue("tenantPreset") || form.selectedTenantId;
+    return data;
+  }
+
+  function fillAddress(property, house) {
+    var line = property.street;
+    if (house && property.houseMark) line += " " + property.houseMark + house;
+    $("endereco").value = line;
+    $("cidadeImovel").value = property.city;
+    $("cep").value = property.cep || "";
+  }
+
+  function renderPropertyPresets() {
+    var container = $("propertyPresets");
+    container.innerHTML = "";
+    PROPERTIES.forEach(function (p) {
+      var wrap = document.createElement("label");
+      wrap.className = "preset-option";
+      var radio = document.createElement("input");
+      radio.type = "radio";
+      radio.name = "propertyPreset";
+      radio.value = p.id;
+      radio.checked = p.id === form.selectedPropertyId;
+      radio.addEventListener("change", function () {
+        var tenant = tenants.find(function (t) { return t.id === form.selectedTenantId; });
+        var house = tenant && tenant.propertyId === p.id ? tenant.propertyNumber : "";
+        fillAddress(p, house);
+      });
+      var span = document.createElement("span");
+      span.textContent = p.label;
+      wrap.appendChild(radio);
+      wrap.appendChild(span);
+      container.appendChild(wrap);
+    });
+  }
+
+  function renderTenantPresets() {
+    var container = $("tenantPresets");
+    container.innerHTML = "";
+    tenants.forEach(function (t) {
+      var wrap = document.createElement("label");
+      wrap.className = "preset-option";
+      var radio = document.createElement("input");
+      radio.type = "radio";
+      radio.name = "tenantPreset";
+      radio.value = t.id;
+      radio.checked = t.id === form.selectedTenantId;
+      radio.addEventListener("change", function () {
+        $("locatarioCpf").value = "";
+        $("locatarioRg").value = "";
+        $("locatarioNome").value = t.label;
+        if (t.propertyId) {
+          var property = PROPERTIES.find(function (p) { return p.id === t.propertyId; });
+          if (property) {
+            form.selectedPropertyId = property.id;
+            fillAddress(property, t.propertyNumber);
+            renderPropertyPresets();
+          }
+        }
+      });
+      var span = document.createElement("span");
+      span.textContent = t.propertyNumber ? t.label + " (Casa " + t.propertyNumber + ")" : t.label;
+      wrap.appendChild(radio);
+      wrap.appendChild(span);
+      container.appendChild(wrap);
+    });
+  }
+
+  function applyForm(data) {
+    FIELD_IDS.forEach(function (id) {
+      $(id).value = data[id] != null ? data[id] : "";
+    });
+    var pendencia = document.querySelector('input[name="pendencia"][value="' + data.pendencia + '"]');
+    var multa = document.querySelector('input[name="multa"][value="' + data.multa + '"]');
+    if (pendencia) pendencia.checked = true;
+    if (multa) multa.checked = true;
+    renderPropertyPresets();
+    renderTenantPresets();
+    toggleConditional(data);
+  }
+
+  function toggleConditional(data) {
+    var pending = data.pendencia === "existem";
+    PENDING_IDS.forEach(function (id) { $(id).disabled = !pending; });
+    $("valMulta").disabled = data.multa !== "cobrada";
+    $("totalDisplay").value = pending
+      ? "R$ " + pendingTotal(data).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+      : "";
+  }
+
+  function fill(text, extra) {
+    var value = (text || "").trim();
+    var cls = "fill" + (extra ? " " + extra : "");
+    if (!value) return '<span class="' + cls + '">&nbsp;</span>';
+    return '<span class="' + cls + '">' + esc(value) + '</span>';
+  }
+
+  function paren(on) {
+    return on ? "(X)" : "( )";
+  }
+
+  function addressLine2(data) {
+    var city = (data.cidadeImovel || "").trim();
+    var cep = (data.cep || "").trim();
+    if (city && cep) return city + "\u00a0\u00a0\u00a0\u00a0CEP " + cep;
+    if (cep) return "CEP " + cep;
+    return city;
+  }
+
+  function moneyLine(label, raw, show) {
+    return "<div>" + esc(label) + ": R$ " + fill(show ? fmtAmount(raw) : "", "money") + "</div>";
+  }
+
+  function buildTermo(data) {
+    var pending = data.pendencia === "existem";
+    var total = pending
+      ? pendingTotal(data).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+      : "";
+    var multaValor = data.multa === "cobrada" ? fmtAmount(data.valMulta) : "";
+
+    return '' +
+      '<article class="termo">' +
+        '<h2>TERMO DE RESCISÃO DE CONTRATO DE LOCAÇÃO<br>DE IMÓVEL RESIDENCIAL</h2>' +
+        '<p>Pelo presente instrumento particular, as partes abaixo identificadas:</p>' +
+        '<p><strong>LOCADOR(A):</strong> ' + fill(data.locadorNome) + '</p>' +
+        '<p><strong>CPF:</strong> ' + fill(data.locadorCpf) + ' &nbsp; <strong>RG:</strong> ' + fill(data.locadorRg) + '</p>' +
+        '<p><strong>LOCATÁRIO(A):</strong> ' + fill(data.locatarioNome) + '</p>' +
+        '<p><strong>CPF:</strong> ' + fill(data.locatarioCpf) + ' &nbsp; <strong>RG:</strong> ' + fill(data.locatarioRg) + '</p>' +
+        '<p>Resolvem, de comum acordo, formalizar a <strong>RESCISÃO DO CONTRATO DE LOCAÇÃO</strong> do imóvel situado à:</p>' +
+        '<p>Endereço do imóvel:' + fill(data.endereco, "wide") + fill(addressLine2(data), "wide") + '</p>' +
+        '<p class="clause">CLÁUSULA 1ª - DO ENCERRAMENTO</p>' +
+        '<p>As partes acordam pelo encerramento do contrato de locação firmado em ' + fill(fmtDateBR(data.dataContrato), "date") +
+          ' referente ao imóvel acima identificado, ficando estabelecida como data de encerramento da locação ' +
+          fill(fmtDateBR(data.dataEncerramento), "date") + '.</p>' +
+        '<p class="clause">CLÁUSULA 2ª - DA ENTREGA DAS CHAVES</p>' +
+        '<p>O(A) LOCATÁRIO(A) compromete-se a entregar as chaves do imóvel na data de ' + fill(fmtDateBR(data.dataChaves), "date") +
+          ' declarando que o imóvel será devolvido conforme as condições previstas no contrato original, ressalvado o desgaste natural decorrente do uso normal.</p>' +
+        '<p class="clause">CLÁUSULA 3ª - DOS VALORES PENDENTES</p>' +
+        '<p>As partes declaram que:</p>' +
+        '<p class="option">' + paren(data.pendencia === "nenhuma") + ' Não existem valores pendentes relativos à locação.</p>' +
+        '<p class="option">' + paren(pending) + ' Existem valores pendentes, discriminados a seguir:</p>' +
+        '<div class="values">' +
+          moneyLine("Aluguel", data.valAluguel, pending) +
+          moneyLine("Condomínio", data.valCondominio, pending) +
+          moneyLine("IPTU", data.valIptu, pending) +
+          moneyLine("Outros", data.valOutros, pending) +
+          '<div>Total: R$ ' + fill(total, "money") + '</div>' +
+          '<div>Forma e prazo de pagamento: ' + fill(pending ? data.formaPagamento : "", "long") + '</div>' +
+        '</div>' +
+        '<p class="clause">CLÁUSULA 4ª - DA QUITAÇÃO</p>' +
+        '<p>Após o cumprimento das obrigações financeiras e a entrega das chaves, as partes darão quitação das obrigações decorrentes da locação, ressalvadas eventuais obrigações ainda não apuradas ou expressamente previstas neste termo.</p>' +
+        '<p class="clause">CLÁUSULA 5ª - DA MULTA RESCISÓRIA</p>' +
+        '<p>As partes declaram que:</p>' +
+        '<p class="option">' + paren(data.multa === "nenhuma") + ' Não haverá cobrança de multa rescisória.</p>' +
+        '<p class="option">' + paren(data.multa === "cobrada") + ' Será cobrada multa rescisória no valor de R$ ' + fill(multaValor, "money") + '.</p>' +
+        '<p class="option">' + paren(data.multa === "dispensada") + ' A multa será dispensada por acordo entre as partes.</p>' +
+        '<p class="closing">E, por estarem de pleno acordo, assinam o presente instrumento em duas vias de igual teor.</p>' +
+        '<p><strong>Cidade:</strong> ' + fill(data.cidade) + ' &nbsp;&nbsp; <strong>Data:</strong> ' + fill(fmtDateBR(data.dataTermo), "date") + '</p>' +
+        '<div class="sign-row">' +
+          '<div class="sign"><div class="who">LOCADOR(A)</div><div class="line">Assinatura</div></div>' +
+          '<div class="sign"><div class="who">LOCATÁRIO(A)</div><div class="line">Assinatura</div></div>' +
+        '</div>' +
+      '</article>';
+  }
+
+  function render() {
+    toggleConditional(form);
+    $("termoPreview").innerHTML = buildTermo(form);
+  }
+
+  function onFormChange() {
+    form = collect();
+    localStorage.setItem(STORAGE, JSON.stringify(form));
+    render();
+  }
+
+  applyForm(form);
+  render();
+
+  $("termoForm").addEventListener("submit", function (e) { e.preventDefault(); });
+  $("termoForm").addEventListener("input", onFormChange);
+  $("termoForm").addEventListener("change", onFormChange);
+  $("printBtn").addEventListener("click", function () {
+    onFormChange();
+    window.print();
+  });
+})();
+</script>
+</body>
+</html>
