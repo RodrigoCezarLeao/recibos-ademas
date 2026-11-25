@@ -365,7 +365,7 @@
 
   function defaultForm() {
     return {
-      locadorNome: "Norman Sampaio Cezar",
+      locadorNome: "Ademar Sampaio Cezar",
       locadorCpf: "111.511.347-04",
       locadorRg: "07.903.941-0",
       locatarioNome: "Fabiana Regina Penha da Silva dos Santos",
@@ -438,6 +438,7 @@
         Object.keys(base).forEach(function (key) {
           if (parsed[key] != null) base[key] = parsed[key];
         });
+        if (/^norman\b/i.test(base.locadorNome || "")) base.locadorNome = "Ademar Sampaio Cezar";
       }
     } catch (e) {}
     return base;
